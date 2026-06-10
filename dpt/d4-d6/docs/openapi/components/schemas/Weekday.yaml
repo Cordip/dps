@@ -1,0 +1,11 @@
+type: string
+description: RFC 5545 weekday token.
+enum:
+  - MO
+  - TU
+  - WE
+  - TH
+  - FR
+  - SA
+  - SU
+example: MO

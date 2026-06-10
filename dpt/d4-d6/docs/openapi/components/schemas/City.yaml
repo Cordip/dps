@@ -1,0 +1,13 @@
+type: object
+required:
+  - city
+  - country
+properties:
+  city:
+    type: string
+    description: Localized city name.
+    example: Novosibirsk
+  country:
+    type: string
+    description: Localized country name.
+    example: Russia

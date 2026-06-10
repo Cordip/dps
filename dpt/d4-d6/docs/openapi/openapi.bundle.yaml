@@ -1,0 +1,2381 @@
+openapi: 3.0.3
+info:
+  title: D5 Flights REST API
+  version: 0.1.0
+  description: REST API design for D5.
+security: []
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local Axum D6 service
+  - url: /api/v1
+    description: API v1 relative base path
+paths:
+  /cities:
+    get:
+      operationId: listCities
+      summary: List available cities
+      description: Returns country and city pairs from the airport directory or from the route network.
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          description: Selects which city set to return.
+          schema:
+            type: string
+            default: route_any
+            example: all
+            enum:
+              - all
+              - route_source
+              - route_destination
+              - route_any
+        - name: lang
+          in: query
+          required: false
+          description: Selects language for localized city and country names.
+          schema:
+            type: string
+            default: en
+            example: en
+            enum:
+              - en
+              - ru
+        - name: search
+          in: query
+          required: false
+          description: >-
+            Tokenized multilingual search across city and country names in English, Russian, and transliterated Russian
+            aliases. lang only selects response display language.
+          schema:
+            type: string
+            example: moskva
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of cities to return.
+          schema:
+            type: integer
+            default: 100
+            example: 5
+            minimum: 1
+            maximum: 500
+        - name: offset
+          in: query
+          required: false
+          description: Number of items to skip before returning the page.
+          schema:
+            type: integer
+            default: 0
+            example: 0
+            minimum: 0
+      responses:
+        '200':
+          description: City list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CityListResponse'
+              examples:
+                englishRouteAny:
+                  summary: English route source or destination cities
+                  value:
+                    items:
+                      - city: Ahmedabad
+                        country: India
+                      - city: Atlanta
+                        country: United States
+                      - city: Bangalore
+                        country: India
+                      - city: Delhi
+                        country: India
+                    limit: 5
+                    offset: 0
+                    has_more: false
+                englishAll:
+                  summary: English all cities
+                  value:
+                    items:
+                      - city: Ahmedabad
+                        country: India
+                      - city: Atlanta
+                        country: United States
+                      - city: Bangalore
+                        country: India
+                      - city: Delhi
+                        country: India
+                      - city: Moscow
+                        country: Russia
+                      - city: Novosibirsk
+                        country: Russia
+                    limit: 100
+                    offset: 0
+                    has_more: false
+                englishLimited:
+                  summary: English limited first page
+                  value:
+                    items:
+                      - city: Ahmedabad
+                        country: India
+                      - city: Atlanta
+                        country: United States
+                    limit: 2
+                    offset: 0
+                    has_more: true
+                englishRouteSource:
+                  summary: English route source cities
+                  value:
+                    items:
+                      - city: Ahmedabad
+                        country: India
+                      - city: Atlanta
+                        country: United States
+                    limit: 100
+                    offset: 0
+                    has_more: false
+                englishRouteDestination:
+                  summary: English route destination cities
+                  value:
+                    items:
+                      - city: Bangalore
+                        country: India
+                      - city: Delhi
+                        country: India
+                    limit: 100
+                    offset: 0
+                    has_more: false
+                englishSearch:
+                  summary: English transliterated search result
+                  value:
+                    items:
+                      - city: Moscow
+                        country: Russia
+                    limit: 5
+                    offset: 0
+                    has_more: false
+                russianAll:
+                  summary: Russian all cities
+                  value:
+                    items:
+                      - city: Атланта
+                        country: США
+                      - city: Ахмадабад
+                        country: Индия
+                      - city: Бангалор
+                        country: Индия
+                      - city: Дели
+                        country: Индия
+                      - city: Москва
+                        country: Россия
+                      - city: Новосибирск
+                        country: Россия
+                    limit: 100
+                    offset: 0
+                    has_more: false
+                russianRouteSource:
+                  summary: Russian route source cities
+                  value:
+                    items:
+                      - city: Атланта
+                        country: США
+                      - city: Ахмадабад
+                        country: Индия
+                    limit: 100
+                    offset: 0
+                    has_more: false
+                russianRouteDestination:
+                  summary: Russian route destination cities
+                  value:
+                    items:
+                      - city: Бангалор
+                        country: Индия
+                      - city: Дели
+                        country: Индия
+                    limit: 100
+                    offset: 0
+                    has_more: false
+                russianRouteAny:
+                  summary: Russian route source or destination cities
+                  value:
+                    items:
+                      - city: Атланта
+                        country: США
+                      - city: Ахмадабад
+                        country: Индия
+                      - city: Бангалор
+                        country: Индия
+                      - city: Дели
+                        country: Индия
+                    limit: 100
+                    offset: 0
+                    has_more: false
+                russianSearch:
+                  summary: Russian cross-language search result
+                  value:
+                    items:
+                      - city: Москва
+                        country: Россия
+                    limit: 5
+                    offset: 0
+                    has_more: false
+        '400':
+          description: Invalid query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidScope:
+                  summary: Invalid scope
+                  value:
+                    error: invalid_scope
+                    message: 'scope must be one of: all, route_source, route_destination, route_any'
+                invalidLang:
+                  summary: Invalid lang
+                  value:
+                    error: invalid_lang
+                    message: 'lang must be one of: en, ru'
+                invalidLimit:
+                  summary: Invalid limit
+                  value:
+                    error: invalid_limit
+                    message: limit must be an integer between 1 and 500
+                invalidOffset:
+                  summary: Invalid offset
+                  value:
+                    error: invalid_offset
+                    message: offset must be an integer greater than or equal to 0
+  /airports:
+    get:
+      operationId: listAirports
+      summary: List available airports
+      description: Returns airports from the airport directory or from the route network.
+      parameters:
+        - name: scope
+          in: query
+          required: false
+          description: Selects which airport set to return.
+          schema:
+            type: string
+            default: route_any
+            example: all
+            enum:
+              - all
+              - route_source
+              - route_destination
+              - route_any
+        - name: lang
+          in: query
+          required: false
+          description: Selects language for localized airport, city, and country names.
+          schema:
+            type: string
+            default: en
+            example: en
+            enum:
+              - en
+              - ru
+        - name: search
+          in: query
+          required: false
+          description: >-
+            Tokenized multilingual free-text search across airport code, airport name, city, and country in English,
+            Russian, and transliterated Russian aliases. All tokens must match at least one searchable field; results
+            are ranked by exact, prefix, substring, then trigram similarity.
+          schema:
+            type: string
+            example: moskva svo
+        - name: country
+          in: query
+          required: false
+          description: >-
+            Exact country filter using the selected display language. For full city-directory lookup, combine with city
+            and scope=all.
+          schema:
+            type: string
+            example: Russia
+        - name: city
+          in: query
+          required: false
+          description: >-
+            Exact city filter using the selected display language. For full city-directory lookup, combine with country
+            and scope=all.
+          schema:
+            type: string
+            example: Moscow
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of airports to return.
+          schema:
+            type: integer
+            default: 100
+            example: 5
+            minimum: 1
+            maximum: 500
+        - name: offset
+          in: query
+          required: false
+          description: Number of items to skip before returning the page.
+          schema:
+            type: integer
+            default: 0
+            example: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Airport list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirportListResponse'
+              examples:
+                englishRouteAny:
+                  summary: English route source or destination airports
+                  value:
+                    items:
+                      - airport_code: ATL
+                        airport_name: Hartsfield-Jackson
+                        city: Atlanta
+                        country: United States
+                        coordinates:
+                          longitude: -84.4281
+                          latitude: 33.6367
+                        timezone: America/New_York
+                      - airport_code: DEL
+                        airport_name: Indira Gandhi
+                        city: Delhi
+                        country: India
+                        coordinates:
+                          longitude: 77.1031
+                          latitude: 28.5562
+                        timezone: Asia/Kolkata
+                      - airport_code: BLR
+                        airport_name: Kempegowda
+                        city: Bangalore
+                        country: India
+                        coordinates:
+                          longitude: 77.7063
+                          latitude: 13.1986
+                        timezone: Asia/Kolkata
+                      - airport_code: AMD
+                        airport_name: Sardar Vallabhbhai Patel
+                        city: Ahmedabad
+                        country: India
+                        coordinates:
+                          longitude: 72.6347
+                          latitude: 23.0772
+                        timezone: Asia/Kolkata
+                    limit: 100
+                    offset: 0
+                    has_more: false
+                englishAll:
+                  summary: English airport page
+                  value:
+                    items:
+                      - airport_code: ATL
+                        airport_name: Hartsfield-Jackson
+                        city: Atlanta
+                        country: United States
+                        coordinates:
+                          longitude: -84.4281
+                          latitude: 33.6367
+                        timezone: America/New_York
+                      - airport_code: DEL
+                        airport_name: Indira Gandhi
+                        city: Delhi
+                        country: India
+                        coordinates:
+                          longitude: 77.1031
+                          latitude: 28.5562
+                        timezone: Asia/Kolkata
+                    limit: 2
+                    offset: 0
+                    has_more: true
+                russianAll:
+                  summary: Russian airport page
+                  value:
+                    items:
+                      - airport_code: AMD
+                        airport_name: Аэропорт имени Сардара Валлаббхаи Пателя
+                        city: Ахмадабад
+                        country: Индия
+                        coordinates:
+                          longitude: 72.6347
+                          latitude: 23.0772
+                        timezone: Asia/Kolkata
+                      - airport_code: DEL
+                        airport_name: Индира Ганди
+                        city: Дели
+                        country: Индия
+                        coordinates:
+                          longitude: 77.1031
+                          latitude: 28.5562
+                        timezone: Asia/Kolkata
+                    limit: 2
+                    offset: 0
+                    has_more: true
+                englishTokenSearch:
+                  summary: English transliterated token search
+                  value:
+                    items:
+                      - airport_code: SVO
+                        airport_name: Sheremetyevo
+                        city: Moscow
+                        country: Russia
+                        coordinates:
+                          longitude: 37.4146
+                          latitude: 55.9726
+                        timezone: Europe/Moscow
+                    limit: 5
+                    offset: 0
+                    has_more: false
+                englishWithinCity:
+                  summary: English airports within city
+                  value:
+                    items:
+                      - airport_code: BKA
+                        airport_name: Bykovo
+                        city: Moscow
+                        country: Russia
+                        coordinates:
+                          longitude: 38.06
+                          latitude: 55.6172
+                        timezone: Europe/Moscow
+                      - airport_code: DME
+                        airport_name: Domodedovo
+                        city: Moscow
+                        country: Russia
+                        coordinates:
+                          longitude: 37.9063
+                          latitude: 55.4088
+                        timezone: Europe/Moscow
+                      - airport_code: OSF
+                        airport_name: Ostafyevo
+                        city: Moscow
+                        country: Russia
+                        coordinates:
+                          longitude: 37.5072
+                          latitude: 55.5117
+                        timezone: Europe/Moscow
+                      - airport_code: SVO
+                        airport_name: Sheremetyevo
+                        city: Moscow
+                        country: Russia
+                        coordinates:
+                          longitude: 37.4146
+                          latitude: 55.9726
+                        timezone: Europe/Moscow
+                      - airport_code: VKO
+                        airport_name: Vnukovo
+                        city: Moscow
+                        country: Russia
+                        coordinates:
+                          longitude: 37.2615
+                          latitude: 55.5915
+                        timezone: Europe/Moscow
+                    limit: 5
+                    offset: 0
+                    has_more: false
+        '400':
+          description: Invalid query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidScope:
+                  summary: Invalid scope
+                  value:
+                    error: invalid_scope
+                    message: 'scope must be one of: all, route_source, route_destination, route_any'
+                invalidLang:
+                  summary: Invalid lang
+                  value:
+                    error: invalid_lang
+                    message: 'lang must be one of: en, ru'
+                invalidLimit:
+                  summary: Invalid limit
+                  value:
+                    error: invalid_limit
+                    message: limit must be an integer between 1 and 500
+                invalidOffset:
+                  summary: Invalid offset
+                  value:
+                    error: invalid_offset
+                    message: offset must be an integer greater than or equal to 0
+  /airports/{airport_code}:
+    get:
+      operationId: getAirportByCode
+      summary: Get airport by code
+      description: Returns one airport by stable IATA airport code.
+      parameters:
+        - name: airport_code
+          in: path
+          required: true
+          description: Stable IATA airport code. Case-insensitive in requests, uppercase in responses.
+          schema:
+            type: string
+            pattern: ^[A-Za-z]{3}$
+            example: SVO
+        - name: lang
+          in: query
+          required: false
+          description: Selects language for localized airport, city, and country names.
+          schema:
+            type: string
+            default: en
+            enum:
+              - en
+              - ru
+      responses:
+        '200':
+          description: Airport found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Airport'
+              examples:
+                englishSheremetyevo:
+                  summary: English airport
+                  value:
+                    airport_code: SVO
+                    airport_name: Sheremetyevo
+                    city: Moscow
+                    country: Russia
+                    coordinates:
+                      longitude: 37.4146
+                      latitude: 55.9726
+                    timezone: Europe/Moscow
+                russianSheremetyevo:
+                  summary: Russian airport
+                  value:
+                    airport_code: SVO
+                    airport_name: Шереметьево
+                    city: Москва
+                    country: Россия
+                    coordinates:
+                      longitude: 37.4146
+                      latitude: 55.9726
+                    timezone: Europe/Moscow
+        '400':
+          description: Invalid query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidAirportCode:
+                  summary: Invalid airport code format
+                  value:
+                    error: invalid_airport_code
+                    message: airport_code must be a 3-letter IATA code
+                invalidLang:
+                  summary: Invalid lang
+                  value:
+                    error: invalid_lang
+                    message: 'lang must be one of: en, ru'
+        '404':
+          description: Airport was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                airportNotFound:
+                  summary: Unknown airport code
+                  value:
+                    error: airport_not_found
+                    message: Airport was not found
+  /airports/{airport_code}/schedule/arrivals:
+    get:
+      operationId: listAirportScheduledArrivals
+      summary: List scheduled arrivals for an airport
+      description: Returns regular inbound schedule rows for one destination airport.
+      parameters:
+        - name: airport_code
+          in: path
+          required: true
+          description: Stable IATA airport code. Case-insensitive in requests, uppercase in responses.
+          schema:
+            type: string
+            pattern: ^[A-Za-z]{3}$
+            example: BOM
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of scheduled arrival rows to return.
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 500
+        - name: offset
+          in: query
+          required: false
+          description: Number of scheduled arrival rows to skip before returning the page.
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Scheduled arrival list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledArrivalListResponse'
+              examples:
+                mumbaiArrivals:
+                  summary: Scheduled arrivals for Mumbai
+                  value:
+                    items:
+                      - route_no: PG0252
+                        days_of_week:
+                          - MO
+                        scheduled_time: '00:05'
+                        timezone: Asia/Kolkata
+                        origin:
+                          airport_code: BER
+                      - route_no: PG0459
+                        days_of_week:
+                          - TU
+                          - WE
+                          - TH
+                          - FR
+                          - SA
+                          - SU
+                        scheduled_time: '01:20'
+                        timezone: Asia/Kolkata
+                        origin:
+                          airport_code: LKO
+                    limit: 2
+                    offset: 0
+                    has_more: true
+                noArrivals:
+                  summary: Known airport without inbound schedule rows
+                  value:
+                    items: []
+                    limit: 100
+                    offset: 0
+                    has_more: false
+        '400':
+          description: Invalid query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidAirportCode:
+                  summary: Invalid airport code format
+                  value:
+                    error: invalid_airport_code
+                    message: airport_code must be a 3-letter IATA code
+                invalidLimit:
+                  summary: Invalid limit
+                  value:
+                    error: invalid_limit
+                    message: limit must be an integer between 1 and 500
+                invalidOffset:
+                  summary: Invalid offset
+                  value:
+                    error: invalid_offset
+                    message: offset must be an integer greater than or equal to 0
+        '404':
+          description: Airport was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                airportNotFound:
+                  summary: Unknown airport code
+                  value:
+                    error: airport_not_found
+                    message: Airport was not found
+  /airports/{airport_code}/schedule/departures:
+    get:
+      operationId: listAirportScheduledDepartures
+      summary: List scheduled departures for an airport
+      description: Returns regular outbound schedule rows for one origin airport.
+      parameters:
+        - name: airport_code
+          in: path
+          required: true
+          description: Stable IATA airport code. Case-insensitive in requests, uppercase in responses.
+          schema:
+            type: string
+            pattern: ^[A-Za-z]{3}$
+            example: AMD
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of scheduled departure rows to return.
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 500
+        - name: offset
+          in: query
+          required: false
+          description: Number of scheduled departure rows to skip before returning the page.
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Scheduled departure list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduledDepartureListResponse'
+              examples:
+                ahmedabadDepartures:
+                  summary: Scheduled departures from Ahmedabad
+                  value:
+                    items:
+                      - route_no: PG0428
+                        days_of_week:
+                          - TU
+                        scheduled_time: '00:25'
+                        timezone: Asia/Kolkata
+                        destination:
+                          airport_code: SZX
+                      - route_no: PG0309
+                        days_of_week:
+                          - TU
+                          - TH
+                          - SA
+                          - SU
+                        scheduled_time: '00:50'
+                        timezone: Asia/Kolkata
+                        destination:
+                          airport_code: BLR
+                    limit: 2
+                    offset: 0
+                    has_more: true
+                noDepartures:
+                  summary: Known airport without outbound schedule rows
+                  value:
+                    items: []
+                    limit: 100
+                    offset: 0
+                    has_more: false
+        '400':
+          description: Invalid query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidAirportCode:
+                  summary: Invalid airport code format
+                  value:
+                    error: invalid_airport_code
+                    message: airport_code must be a 3-letter IATA code
+                invalidLimit:
+                  summary: Invalid limit
+                  value:
+                    error: invalid_limit
+                    message: limit must be an integer between 1 and 500
+                invalidOffset:
+                  summary: Invalid offset
+                  value:
+                    error: invalid_offset
+                    message: offset must be an integer greater than or equal to 0
+        '404':
+          description: Airport was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                airportNotFound:
+                  summary: Unknown airport code
+                  value:
+                    error: airport_not_found
+                    message: Airport was not found
+  /routes:
+    get:
+      operationId: listRoutes
+      summary: List routes connecting two points
+      description: Finds bookable route options between two points on a specific departure date.
+      parameters:
+        - name: from_type
+          in: query
+          required: true
+          description: Type of source point.
+          schema:
+            type: string
+            example: airport
+            enum:
+              - airport
+              - city
+        - name: to_type
+          in: query
+          required: true
+          description: Type of destination point.
+          schema:
+            type: string
+            example: airport
+            enum:
+              - airport
+              - city
+        - name: lang
+          in: query
+          required: false
+          description: Selects language for city point matching.
+          schema:
+            type: string
+            default: en
+            enum:
+              - en
+              - ru
+        - name: from_airport
+          in: query
+          required: false
+          description: Source airport code. Required when from_type=airport.
+          schema:
+            type: string
+            pattern: ^[A-Za-z]{3}$
+            example: AMD
+        - name: from_country
+          in: query
+          required: false
+          description: Source country. Required when from_type=city.
+          schema:
+            type: string
+            example: India
+        - name: from_city
+          in: query
+          required: false
+          description: Source city. Required when from_type=city.
+          schema:
+            type: string
+            example: Ahmedabad
+        - name: to_airport
+          in: query
+          required: false
+          description: Destination airport code. Required when to_type=airport.
+          schema:
+            type: string
+            pattern: ^[A-Za-z]{3}$
+            example: BOM
+        - name: to_country
+          in: query
+          required: false
+          description: Destination country. Required when to_type=city.
+          schema:
+            type: string
+            example: India
+        - name: to_city
+          in: query
+          required: false
+          description: Destination city. Required when to_type=city.
+          schema:
+            type: string
+            example: Mumbai
+        - name: departure_date
+          in: query
+          required: true
+          description: Local departure date for the first segment in the timezone of the first departure airport.
+          schema:
+            type: string
+            format: date
+            example: '2025-12-01'
+        - name: booking_class
+          in: query
+          required: true
+          description: Requested booking class.
+          schema:
+            type: string
+            example: Economy
+            enum:
+              - Economy
+              - Comfort
+              - Business
+        - name: max_connections
+          in: query
+          required: true
+          description: >-
+            Maximum number of connections. unbound means no user-level connection limit, but the API still applies an
+            internal cap of 8 segments.
+          schema:
+            type: string
+            example: '0'
+            enum:
+              - '0'
+              - '1'
+              - '2'
+              - '3'
+              - unbound
+        - name: sort
+          in: query
+          required: false
+          description: Sort order.
+          schema:
+            type: string
+            default: duration
+            example: duration
+            enum:
+              - duration
+              - price
+              - departure_time
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of route options to return.
+          schema:
+            type: integer
+            default: 100
+            example: 1
+            minimum: 1
+            maximum: 500
+        - name: offset
+          in: query
+          required: false
+          description: Number of route options to skip before returning the page.
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        '200':
+          description: Route option list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteListResponse'
+              examples:
+                directRoute:
+                  summary: Direct airport-to-airport route
+                  value:
+                    items:
+                      - booking_class: Economy
+                        total_duration: PT1H5M
+                        total_price:
+                          amount: '3250.00'
+                          currency: RUB
+                        segments:
+                          - sequence: 1
+                            flight_id: 11066
+                            route_no: PG0055
+                            departure_airport:
+                              airport_code: AMD
+                            arrival_airport:
+                              airport_code: BOM
+                            scheduled_departure_at: '2025-12-01T07:45:00+05:30'
+                            scheduled_arrival_at: '2025-12-01T08:50:00+05:30'
+                            duration: PT1H5M
+                            price:
+                              amount: '3250.00'
+                              currency: RUB
+                    limit: 1
+                    offset: 0
+                    has_more: false
+                connectedRoute:
+                  summary: Route with one connection
+                  value:
+                    items:
+                      - booking_class: Economy
+                        total_duration: PT11H30M
+                        total_price:
+                          amount: '8000.00'
+                          currency: RUB
+                        segments:
+                          - sequence: 1
+                            flight_id: 11055
+                            route_no: PG0526
+                            departure_airport:
+                              airport_code: ORY
+                            arrival_airport:
+                              airport_code: VIE
+                            scheduled_departure_at: '2025-12-01T01:50:00+01:00'
+                            scheduled_arrival_at: '2025-12-01T03:40:00+01:00'
+                            duration: PT1H50M
+                            price:
+                              amount: '5500.00'
+                              currency: RUB
+                          - sequence: 2
+                            flight_id: 11126
+                            route_no: PG0486
+                            departure_airport:
+                              airport_code: VIE
+                            arrival_airport:
+                              airport_code: PRG
+                            scheduled_departure_at: '2025-12-01T12:30:00+01:00'
+                            scheduled_arrival_at: '2025-12-01T13:20:00+01:00'
+                            duration: PT50M
+                            price:
+                              amount: '2500.00'
+                              currency: RUB
+                    limit: 1
+                    offset: 0
+                    has_more: true
+                noRoutes:
+                  summary: Valid points with no matching routes
+                  value:
+                    items: []
+                    limit: 100
+                    offset: 0
+                    has_more: false
+        '400':
+          description: Invalid query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidPointType:
+                  value:
+                    error: invalid_point_type
+                    message: 'from_type and to_type must be one of: airport, city'
+                missingPointField:
+                  value:
+                    error: missing_point_field
+                    message: airport point requires airport code; city point requires country and city
+                invalidDepartureDate:
+                  value:
+                    error: invalid_departure_date
+                    message: departure_date must be a valid date in YYYY-MM-DD format
+                invalidBookingClass:
+                  value:
+                    error: invalid_booking_class
+                    message: 'booking_class must be one of: Economy, Comfort, Business'
+                invalidMaxConnections:
+                  value:
+                    error: invalid_max_connections
+                    message: 'max_connections must be one of: 0, 1, 2, 3, unbound'
+                invalidSort:
+                  value:
+                    error: invalid_sort
+                    message: 'sort must be one of: duration, price, departure_time'
+                invalidLang:
+                  value:
+                    error: invalid_lang
+                    message: 'lang must be one of: en, ru'
+                invalidAirportCode:
+                  value:
+                    error: invalid_airport_code
+                    message: airport_code must be a 3-letter IATA code
+                invalidLimit:
+                  value:
+                    error: invalid_limit
+                    message: limit must be an integer between 1 and 500
+                invalidOffset:
+                  value:
+                    error: invalid_offset
+                    message: offset must be an integer greater than or equal to 0
+        '404':
+          description: Source or destination point was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                airportNotFound:
+                  value:
+                    error: airport_not_found
+                    message: Airport was not found
+                cityNotFound:
+                  value:
+                    error: city_not_found
+                    message: City was not found
+        '503':
+          description: Route search exceeded internal safety limits.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                routeSearchTooComplex:
+                  value:
+                    error: route_search_too_complex
+                    message: Route search exceeded the internal safety cap; narrow the request
+  /bookings:
+    post:
+      operationId: createBooking
+      summary: Create booking for selected trips
+      description: |
+        Creates one booking for one passenger from selected flight ids.
+
+        Idempotency behavior:
+        - first request with a new Idempotency-Key creates the booking;
+        - repeat with the same key and the same body returns the same response;
+        - repeat with the same key and a different body returns 409 idempotency_key_conflict;
+        - repeat while the first request is still processing returns 409 idempotency_key_in_progress.
+
+        When trying another request body in Scalar, also change Idempotency-Key.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Technical retry id generated by API client.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+            example: scalar-example-booking-11066
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreateRequest'
+            examples:
+              oneWay:
+                summary: One-way booking
+                value:
+                  booking_class: Economy
+                  passenger:
+                    passenger_id: D6 SCALAR
+                    passenger_name: D6 Scalar Example
+                  trips:
+                    - direction: outbound
+                      segments:
+                        - flight_id: 11066
+              roundTrip:
+                summary: Round-trip booking
+                value:
+                  booking_class: Economy
+                  passenger:
+                    passenger_id: D6 SCALAR
+                    passenger_name: D6 Scalar Example
+                  trips:
+                    - direction: outbound
+                      segments:
+                        - flight_id: 11066
+                    - direction: return
+                      segments:
+                        - flight_id: 11106
+      responses:
+        '201':
+          description: Booking created.
+          headers:
+            Location:
+              required: true
+              description: URL of created booking.
+              schema:
+                type: string
+                example: /api/v1/bookings/ABC123
+            Idempotency-Replayed:
+              required: false
+              description: True when this response is replayed from a previous request with the same Idempotency-Key.
+              schema:
+                type: string
+                enum:
+                  - 'true'
+                  - 'false'
+                example: 'false'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                oneWayCreated:
+                  value:
+                    book_ref: ABC123
+                    book_date: '2025-12-01T00:00:00+00:00'
+                    passenger:
+                      passenger_id: D6 SCALAR
+                      passenger_name: D6 Scalar Example
+                    booking_class: Economy
+                    total_price:
+                      amount: '3250.00'
+                      currency: RUB
+                    trips:
+                      - direction: outbound
+                        ticket_no: '1234567890123'
+                        total_price:
+                          amount: '3250.00'
+                          currency: RUB
+                        segments:
+                          - sequence: 1
+                            flight_id: 11066
+                            route_no: PG0055
+                            departure_airport:
+                              airport_code: AMD
+                            arrival_airport:
+                              airport_code: BOM
+                            scheduled_departure_at: '2025-12-01T07:45:00+05:30'
+                            scheduled_arrival_at: '2025-12-01T08:50:00+05:30'
+                            price:
+                              amount: '3250.00'
+                              currency: RUB
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidRequest:
+                  value:
+                    error: invalid_request
+                    message: request body contains unknown fields
+                missingIdempotencyKey:
+                  value:
+                    error: missing_idempotency_key
+                    message: Idempotency-Key header is required
+                invalidIdempotencyKey:
+                  value:
+                    error: invalid_idempotency_key
+                    message: Idempotency-Key must be a string between 1 and 128 characters
+                invalidBookingClass:
+                  value:
+                    error: invalid_booking_class
+                    message: 'booking_class must be one of: Economy, Comfort, Business'
+                invalidPassenger:
+                  value:
+                    error: invalid_passenger
+                    message: passenger_id and passenger_name are required and must fit length limits
+                invalidTrips:
+                  value:
+                    error: invalid_trips
+                    message: trips must contain one outbound trip and optionally one return trip
+                invalidDirection:
+                  value:
+                    error: invalid_direction
+                    message: 'trip direction must be one of: outbound, return'
+                invalidSegments:
+                  value:
+                    error: invalid_segments
+                    message: Each trip must contain between 1 and 8 segments
+        '404':
+          description: One or more selected flights were not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                flightNotFound:
+                  value:
+                    error: flight_not_found
+                    message: One or more flights were not found
+        '409':
+          description: Booking cannot be completed because of current state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                idempotencyKeyConflict:
+                  value:
+                    error: idempotency_key_conflict
+                    message: Idempotency-Key was already used with a different request body
+                idempotencyKeyInProgress:
+                  value:
+                    error: idempotency_key_in_progress
+                    message: Request with this Idempotency-Key is still being processed
+                flightNotAvailable:
+                  value:
+                    error: flight_not_available
+                    message: One or more flights are not available for booking
+                invalidTripConnection:
+                  value:
+                    error: invalid_trip_connection
+                    message: Trip segments must form a connected path in the provided order
+                invalidReturnTrip:
+                  value:
+                    error: invalid_return_trip
+                    message: Return trip must start after outbound and reverse outbound endpoints
+                priceNotAvailable:
+                  value:
+                    error: price_not_available
+                    message: Price is not available for one or more selected flights
+  /bookings/{book_ref}:
+    get:
+      operationId: getBookingByRef
+      summary: Get booking by reference
+      description: Returns one booking by stable booking reference.
+      parameters:
+        - name: book_ref
+          in: path
+          required: true
+          description: Booking reference. Case-insensitive in requests, uppercase in responses.
+          schema:
+            type: string
+            pattern: ^[A-Za-z0-9]{6}$
+            example: 002MYE
+      responses:
+        '200':
+          description: Booking found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+              examples:
+                createdBooking:
+                  value:
+                    book_ref: 002MYE
+                    book_date: '2025-10-04T03:55:10+00:00'
+                    passenger:
+                      passenger_id: CN 9510405168161
+                      passenger_name: Weizhong Li
+                    booking_class: Economy
+                    total_price:
+                      amount: '5500.00'
+                      currency: RUB
+                    trips:
+                      - direction: outbound
+                        ticket_no: '0005433182226'
+                        total_price:
+                          amount: '5500.00'
+                          currency: RUB
+                        segments:
+                          - sequence: 1
+                            flight_id: 11014
+                            route_no: PG0404
+                            departure_airport:
+                              airport_code: PKX
+                            arrival_airport:
+                              airport_code: HGH
+                            scheduled_departure_at: '2025-12-01T02:15:00+08:00'
+                            scheduled_arrival_at: '2025-12-01T04:05:00+08:00'
+                            price:
+                              amount: '5500.00'
+                              currency: RUB
+        '400':
+          description: Invalid booking reference.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidBookRef:
+                  value:
+                    error: invalid_book_ref
+                    message: book_ref must be a 6-character alphanumeric string
+        '404':
+          description: Booking was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                bookingNotFound:
+                  value:
+                    error: booking_not_found
+                    message: Booking was not found
+  /check-ins:
+    post:
+      operationId: createCheckIn
+      summary: Online check-in for a flight
+      description: |
+        Checks in one ticket through its first flight and creates boarding passes for all flights in the ticket.
+
+        This operation changes database state. The bundled Scalar example uses a real demo ticket;
+        after it is checked in once, repeating the same request returns already_checked_in.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckInRequest'
+            examples:
+              twoSegmentTicket:
+                value:
+                  ticket_no: '0005433261815'
+                  flight_id: 11051
+                  seats:
+                    - flight_id: 11051
+                      seat_no: 31J
+                    - flight_id: 11220
+                      seat_no: 17A
+      responses:
+        '201':
+          description: Check-in completed and boarding passes created.
+          headers:
+            Location:
+              required: true
+              description: URL of boarding passes created for the ticket.
+              schema:
+                type: string
+                example: /api/v1/tickets/0005433261815/boarding-passes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckInResponse'
+              examples:
+                checkedIn:
+                  value:
+                    ticket_no: '0005433261815'
+                    checked_in_at: '2025-12-01T00:00:00+00:00'
+                    boarding_passes:
+                      - ticket_no: '0005433261815'
+                        flight_id: 11051
+                        route_no: PG0356
+                        seat_no: 31J
+                      - ticket_no: '0005433261815'
+                        flight_id: 11220
+                        route_no: PG0574
+                        seat_no: 17A
+        '400':
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidRequest:
+                  value:
+                    error: invalid_request
+                    message: request body contains unknown fields
+                invalidTicketNo:
+                  value:
+                    error: invalid_ticket_no
+                    message: ticket_no must be a 13-digit string
+                invalidFlightId:
+                  value:
+                    error: invalid_flight_id
+                    message: flight_id must be an integer
+                invalidSeats:
+                  value:
+                    error: invalid_seats
+                    message: seats must contain exactly one seat for each flight in the ticket
+                invalidSeat:
+                  value:
+                    error: invalid_seat
+                    message: One or more selected seats do not exist or do not match fare conditions
+        '404':
+          description: Ticket or flight reference was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                ticketNotFound:
+                  value:
+                    error: ticket_not_found
+                    message: Ticket was not found
+                flightNotFound:
+                  value:
+                    error: flight_not_found
+                    message: Flight was not found
+                ticketSegmentNotFound:
+                  value:
+                    error: ticket_segment_not_found
+                    message: Flight is not part of this ticket
+        '409':
+          description: Check-in cannot be completed because of current state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                notFirstFlight:
+                  value:
+                    error: not_first_flight
+                    message: Check-in must be started from the first flight in the ticket
+                alreadyCheckedIn:
+                  value:
+                    error: already_checked_in
+                    message: This ticket is already checked in
+                checkinNotOpen:
+                  value:
+                    error: checkin_not_open
+                    message: Check-in opens 24 hours before scheduled departure
+                checkinClosed:
+                  value:
+                    error: checkin_closed
+                    message: Check-in is closed for this flight
+                flightCancelled:
+                  value:
+                    error: flight_cancelled
+                    message: Cannot check in for a cancelled flight
+                seatUnavailable:
+                  value:
+                    error: seat_unavailable
+                    message: One or more selected seats are not available
+  /tickets/{ticket_no}/flights/{flight_id}/seats:
+    get:
+      operationId: listTicketFlightSeats
+      summary: List seats for a ticket flight
+      description: Returns seat availability for one flight inside one ticket.
+      parameters:
+        - name: ticket_no
+          in: path
+          required: true
+          description: Ticket number.
+          schema:
+            type: string
+            pattern: ^\d{13}$
+            example: '0005433261815'
+        - name: flight_id
+          in: path
+          required: true
+          description: Flight id inside the ticket.
+          schema:
+            type: integer
+            minimum: 1
+            example: 11051
+      responses:
+        '200':
+          description: Seat list for this ticket flight.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatMapResponse'
+              examples:
+                economySeats:
+                  value:
+                    ticket_no: '0005433261815'
+                    flight_id: 11051
+                    items:
+                      - seat_no: 1A
+                        fare_conditions: Business
+                        status: occupied
+                      - seat_no: 31J
+                        fare_conditions: Economy
+                        status: available
+                      - seat_no: 32D
+                        fare_conditions: Economy
+                        status: available
+                      - seat_no: 20C
+                        fare_conditions: Comfort
+                        status: blocked
+        '400':
+          description: Invalid path parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidTicketNo:
+                  value:
+                    error: invalid_ticket_no
+                    message: ticket_no must be a 13-digit string
+                invalidFlightId:
+                  value:
+                    error: invalid_flight_id
+                    message: flight_id must be an integer
+        '404':
+          description: Ticket, flight, or ticket segment was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                ticketNotFound:
+                  value:
+                    error: ticket_not_found
+                    message: Ticket was not found
+                flightNotFound:
+                  value:
+                    error: flight_not_found
+                    message: Flight was not found
+                ticketSegmentNotFound:
+                  value:
+                    error: ticket_segment_not_found
+                    message: Flight is not part of this ticket
+  /tickets/{ticket_no}/boarding-passes:
+    get:
+      operationId: listTicketBoardingPasses
+      summary: List boarding passes for a ticket
+      description: Returns boarding passes created by online check-in for one ticket.
+      parameters:
+        - name: ticket_no
+          in: path
+          required: true
+          description: Ticket number.
+          schema:
+            type: string
+            pattern: ^\d{13}$
+            example: '0005433348362'
+      responses:
+        '200':
+          description: Boarding pass list for the ticket.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BoardingPassListResponse'
+              examples:
+                checkedInTicket:
+                  summary: Ticket with boarding passes
+                  value:
+                    ticket_no: '0005433348362'
+                    items:
+                      - ticket_no: '0005433348362'
+                        flight_id: 10817
+                        route_no: PG0370
+                        seat_no: 17B
+                      - ticket_no: '0005433348362'
+                        flight_id: 10935
+                        route_no: PG0179
+                        seat_no: 16A
+                      - ticket_no: '0005433348362'
+                        flight_id: 11108
+                        route_no: PG0408
+                        seat_no: 24C
+                      - ticket_no: '0005433348362'
+                        flight_id: 11264
+                        route_no: PG0482
+                        seat_no: 4B
+                notCheckedInTicket:
+                  summary: Known ticket without check-in
+                  value:
+                    ticket_no: '0005433261815'
+                    items: []
+        '400':
+          description: Invalid path parameter.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidTicketNo:
+                  value:
+                    error: invalid_ticket_no
+                    message: ticket_no must be a 13-digit string
+        '404':
+          description: Ticket was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                ticketNotFound:
+                  value:
+                    error: ticket_not_found
+                    message: Ticket was not found
+components:
+  schemas:
+    AirportListResponse:
+      type: object
+      required:
+        - items
+        - limit
+        - offset
+        - has_more
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Airport'
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 500
+          description: Maximum number of items requested.
+          example: 100
+        offset:
+          type: integer
+          minimum: 0
+          description: Number of items skipped before this page.
+          example: 0
+        has_more:
+          type: boolean
+          description: Whether another page is available.
+          example: true
+    Airport:
+      type: object
+      required:
+        - airport_code
+        - airport_name
+        - city
+        - country
+        - coordinates
+        - timezone
+      properties:
+        airport_code:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: Stable IATA airport code.
+          example: SVO
+        airport_name:
+          type: string
+          description: Localized airport name.
+          example: Sheremetyevo
+        city:
+          type: string
+          description: Localized city name.
+          example: Moscow
+        country:
+          type: string
+          description: Localized country name.
+          example: Russia
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        timezone:
+          type: string
+          description: Airport time zone.
+          example: Europe/Moscow
+    AirportRef:
+      type: object
+      required:
+        - airport_code
+      properties:
+        airport_code:
+          type: string
+          pattern: ^[A-Z]{3}$
+          description: Stable IATA airport code.
+          example: AMD
+    Coordinates:
+      type: object
+      required:
+        - longitude
+        - latitude
+      properties:
+        longitude:
+          type: number
+          format: double
+          example: 37.4146
+        latitude:
+          type: number
+          format: double
+          example: 55.9726
+    Price:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: string
+          description: Decimal money amount encoded as string.
+          pattern: ^\d+\.\d{2}$
+          example: '12500.00'
+        currency:
+          type: string
+          description: ISO 4217 currency code. Current project uses RUB.
+          enum:
+            - RUB
+          example: RUB
+    RouteListResponse:
+      type: object
+      required:
+        - items
+        - limit
+        - offset
+        - has_more
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteOption'
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 500
+          example: 100
+        offset:
+          type: integer
+          minimum: 0
+          example: 0
+        has_more:
+          type: boolean
+          example: false
+    RouteOption:
+      type: object
+      required:
+        - booking_class
+        - total_duration
+        - total_price
+        - segments
+      properties:
+        booking_class:
+          type: string
+          enum:
+            - Economy
+            - Comfort
+            - Business
+          example: Economy
+        total_duration:
+          type: string
+          description: Total route option duration in ISO 8601 duration format, including connection time.
+          example: PT6H5M
+        total_price:
+          $ref: '#/components/schemas/Price'
+        segments:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RouteSegment'
+    RouteSegment:
+      type: object
+      required:
+        - sequence
+        - flight_id
+        - route_no
+        - departure_airport
+        - arrival_airport
+        - scheduled_departure_at
+        - scheduled_arrival_at
+        - duration
+        - price
+      properties:
+        sequence:
+          type: integer
+          minimum: 1
+          description: Segment order inside route option.
+          example: 1
+        flight_id:
+          type: integer
+          minimum: 1
+          description: Stable flight id used later for booking.
+          example: 11066
+        route_no:
+          type: string
+          description: Route number. This maps the task's "Flight no" wording to the 2025 schema field.
+          example: PG0055
+        departure_airport:
+          $ref: '#/components/schemas/AirportRef'
+        arrival_airport:
+          $ref: '#/components/schemas/AirportRef'
+        scheduled_departure_at:
+          type: string
+          format: date-time
+          description: Scheduled departure datetime with offset.
+          example: '2025-12-01T07:45:00+05:30'
+        scheduled_arrival_at:
+          type: string
+          format: date-time
+          description: Scheduled arrival datetime with offset.
+          example: '2025-12-01T08:50:00+05:30'
+        duration:
+          type: string
+          description: Segment duration in ISO 8601 duration format.
+          example: PT1H5M
+        price:
+          $ref: '#/components/schemas/Price'
+    Booking:
+      type: object
+      required:
+        - book_ref
+        - book_date
+        - passenger
+        - booking_class
+        - total_price
+        - trips
+      properties:
+        book_ref:
+          type: string
+          pattern: ^[A-Z0-9]{6}$
+          description: Booking reference generated by backend.
+          example: 002MYE
+        book_date:
+          type: string
+          format: date-time
+          description: Booking creation time from bookings.book_date.
+          example: '2025-10-04T03:55:10+00:00'
+        passenger:
+          $ref: '#/components/schemas/BookingPassenger'
+        booking_class:
+          type: string
+          enum:
+            - Economy
+            - Comfort
+            - Business
+          example: Economy
+        total_price:
+          $ref: '#/components/schemas/Price'
+        trips:
+          type: array
+          minItems: 1
+          maxItems: 2
+          items:
+            $ref: '#/components/schemas/BookingTrip'
+    BookingCreateRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - booking_class
+        - passenger
+        - trips
+      properties:
+        booking_class:
+          type: string
+          enum:
+            - Economy
+            - Comfort
+            - Business
+          description: Fare condition to use for all selected trips.
+          example: Economy
+        passenger:
+          $ref: '#/components/schemas/BookingPassengerInput'
+        trips:
+          type: array
+          minItems: 1
+          maxItems: 2
+          description: One outbound trip and optionally one return trip.
+          items:
+            $ref: '#/components/schemas/BookingCreateTrip'
+    BookingCreateTrip:
+      type: object
+      additionalProperties: false
+      required:
+        - direction
+        - segments
+      properties:
+        direction:
+          type: string
+          enum:
+            - outbound
+            - return
+          description: Trip direction. Maps to tickets.outbound.
+          example: outbound
+        segments:
+          type: array
+          minItems: 1
+          maxItems: 8
+          description: Selected flight ids in trip order.
+          items:
+            $ref: '#/components/schemas/BookingCreateSegment'
+    BookingCreateSegment:
+      type: object
+      additionalProperties: false
+      required:
+        - flight_id
+      properties:
+        flight_id:
+          type: integer
+          minimum: 1
+          description: Selected flight id from route search.
+          example: 11066
+    BookingPassenger:
+      type: object
+      required:
+        - passenger_id
+        - passenger_name
+      properties:
+        passenger_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: Passenger document identifier from tickets.passenger_id.
+          example: RU 2714075620824
+        passenger_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Passenger full name from tickets.passenger_name.
+          example: Nadezhda Sergeeva
+    BookingPassengerInput:
+      type: object
+      additionalProperties: false
+      required:
+        - passenger_id
+        - passenger_name
+      properties:
+        passenger_id:
+          type: string
+          minLength: 1
+          maxLength: 64
+          description: Passenger document identifier from tickets.passenger_id.
+          example: RU 2714075620824
+        passenger_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Passenger full name from tickets.passenger_name.
+          example: Nadezhda Sergeeva
+    BookingTrip:
+      type: object
+      required:
+        - direction
+        - ticket_no
+        - total_price
+        - segments
+      properties:
+        direction:
+          type: string
+          enum:
+            - outbound
+            - return
+          example: outbound
+        ticket_no:
+          type: string
+          pattern: ^\d{13}$
+          description: Ticket number generated by backend.
+          example: '0005433348362'
+        total_price:
+          $ref: '#/components/schemas/Price'
+        segments:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            $ref: '#/components/schemas/BookingSegment'
+    BookingSegment:
+      type: object
+      required:
+        - sequence
+        - flight_id
+        - route_no
+        - departure_airport
+        - arrival_airport
+        - scheduled_departure_at
+        - scheduled_arrival_at
+        - price
+      properties:
+        sequence:
+          type: integer
+          minimum: 1
+          description: Segment order inside trip.
+          example: 1
+        flight_id:
+          type: integer
+          minimum: 1
+          description: Stable flight id.
+          example: 11066
+        route_no:
+          type: string
+          description: Route number. This maps the task's "Flight no" wording to the 2025 schema field.
+          example: PG0055
+        departure_airport:
+          $ref: '#/components/schemas/AirportRef'
+        arrival_airport:
+          $ref: '#/components/schemas/AirportRef'
+        scheduled_departure_at:
+          type: string
+          format: date-time
+          description: Scheduled departure datetime with offset.
+          example: '2025-12-01T07:45:00+05:30'
+        scheduled_arrival_at:
+          type: string
+          format: date-time
+          description: Scheduled arrival datetime with offset.
+          example: '2025-12-01T08:50:00+05:30'
+        price:
+          $ref: '#/components/schemas/Price'
+    CheckInRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - ticket_no
+        - flight_id
+        - seats
+      properties:
+        ticket_no:
+          type: string
+          pattern: ^\d{13}$
+          description: Ticket number.
+          example: '0005433261815'
+        flight_id:
+          type: integer
+          minimum: 1
+          description: Entry flight id. Must be the first flight in the ticket.
+          example: 11051
+        seats:
+          type: array
+          minItems: 1
+          maxItems: 8
+          description: Seat choices for every flight in the ticket.
+          items:
+            $ref: '#/components/schemas/CheckInSeatRequest'
+    CheckInSeatRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - flight_id
+        - seat_no
+      properties:
+        flight_id:
+          type: integer
+          minimum: 1
+          description: Flight id inside the ticket.
+          example: 11051
+        seat_no:
+          type: string
+          minLength: 1
+          maxLength: 8
+          pattern: ^[0-9]{1,3}[A-Z]$
+          description: Requested seat number for the flight.
+          example: 31J
+    CheckInResponse:
+      type: object
+      required:
+        - ticket_no
+        - checked_in_at
+        - boarding_passes
+      properties:
+        ticket_no:
+          type: string
+          pattern: ^\d{13}$
+          example: '0005433261815'
+        checked_in_at:
+          type: string
+          format: date-time
+          description: Check-in creation time from bookings.now().
+          example: '2025-12-01T00:00:00+00:00'
+        boarding_passes:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            $ref: '#/components/schemas/BoardingPass'
+    BoardingPass:
+      type: object
+      required:
+        - ticket_no
+        - flight_id
+        - route_no
+        - seat_no
+      properties:
+        ticket_no:
+          type: string
+          pattern: ^\d{13}$
+          example: '0005433348362'
+        flight_id:
+          type: integer
+          minimum: 1
+          example: 11051
+        route_no:
+          type: string
+          description: Route number. This maps the task's "Flight no" wording to the 2025 schema field.
+          example: PG0356
+        seat_no:
+          type: string
+          minLength: 1
+          maxLength: 8
+          pattern: ^[0-9]{1,3}[A-Z]$
+          example: 31J
+    BoardingPassListResponse:
+      type: object
+      required:
+        - ticket_no
+        - items
+      properties:
+        ticket_no:
+          type: string
+          pattern: ^\d{13}$
+          example: '0005433348362'
+        items:
+          type: array
+          description: Boarding passes created for this ticket. Empty when the ticket exists but has not been checked in.
+          maxItems: 8
+          items:
+            $ref: '#/components/schemas/BoardingPass'
+    SeatMapResponse:
+      type: object
+      required:
+        - ticket_no
+        - flight_id
+        - items
+      properties:
+        ticket_no:
+          type: string
+          pattern: ^\d{13}$
+          example: '0005433261815'
+        flight_id:
+          type: integer
+          minimum: 1
+          example: 11051
+        items:
+          type: array
+          description: >-
+            Full seat map for this flight/ticket context. This is a bounded list limited by aircraft capacity, not a
+            paginated directory.
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/SeatMapSeat'
+    SeatMapSeat:
+      type: object
+      required:
+        - seat_no
+        - fare_conditions
+        - status
+      properties:
+        seat_no:
+          type: string
+          minLength: 1
+          maxLength: 8
+          pattern: ^[0-9]{1,3}[A-Z]$
+          example: 17B
+        fare_conditions:
+          type: string
+          enum:
+            - Economy
+            - Comfort
+            - Business
+          example: Economy
+        status:
+          type: string
+          enum:
+            - available
+            - blocked
+            - occupied
+          description: Seat status for this ticket segment.
+          example: available
+    ScheduledArrivalListResponse:
+      type: object
+      required:
+        - items
+        - limit
+        - offset
+        - has_more
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduledArrival'
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 500
+          example: 100
+        offset:
+          type: integer
+          minimum: 0
+          example: 0
+        has_more:
+          type: boolean
+          example: false
+    ScheduledArrival:
+      type: object
+      required:
+        - route_no
+        - days_of_week
+        - scheduled_time
+        - timezone
+        - origin
+      properties:
+        route_no:
+          type: string
+          description: Route number. This maps the task's "Flight no" wording to the 2025 schema field.
+          example: PG0401
+        days_of_week:
+          type: array
+          description: Arrival weekdays in RFC 5545 weekday token format.
+          items:
+            $ref: '#/components/schemas/Weekday'
+          example:
+            - MO
+            - WE
+            - FR
+        scheduled_time:
+          type: string
+          description: Scheduled arrival time of day in the destination airport timezone.
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+          example: '14:35'
+        timezone:
+          type: string
+          description: IANA timezone of the destination airport.
+          example: Asia/Kolkata
+        origin:
+          $ref: '#/components/schemas/AirportRef'
+    ScheduledDepartureListResponse:
+      type: object
+      required:
+        - items
+        - limit
+        - offset
+        - has_more
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduledDeparture'
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 500
+          example: 100
+        offset:
+          type: integer
+          minimum: 0
+          example: 0
+        has_more:
+          type: boolean
+          example: false
+    ScheduledDeparture:
+      type: object
+      required:
+        - route_no
+        - days_of_week
+        - scheduled_time
+        - timezone
+        - destination
+      properties:
+        route_no:
+          type: string
+          description: Route number. This maps the task's "Flight no" wording to the 2025 schema field.
+          example: PG0401
+        days_of_week:
+          type: array
+          description: Departure weekdays in RFC 5545 weekday token format.
+          items:
+            $ref: '#/components/schemas/Weekday'
+          example:
+            - MO
+            - WE
+            - FR
+        scheduled_time:
+          type: string
+          description: Scheduled departure time of day in the origin airport timezone.
+          pattern: ^([01]\d|2[0-3]):[0-5]\d$
+          example: '11:20'
+        timezone:
+          type: string
+          description: IANA timezone of the origin airport.
+          example: Asia/Kolkata
+        destination:
+          $ref: '#/components/schemas/AirportRef'
+    Weekday:
+      type: string
+      description: RFC 5545 weekday token.
+      enum:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      example: MO
+    CityListResponse:
+      type: object
+      required:
+        - items
+        - limit
+        - offset
+        - has_more
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/City'
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 500
+          description: Maximum number of items requested.
+          example: 100
+        offset:
+          type: integer
+          minimum: 0
+          description: Number of items skipped before this page.
+          example: 0
+        has_more:
+          type: boolean
+          description: Whether another page is available.
+          example: true
+    City:
+      type: object
+      required:
+        - city
+        - country
+      properties:
+        city:
+          type: string
+          description: Localized city name.
+          example: Novosibirsk
+        country:
+          type: string
+          description: Localized country name.
+          example: Russia
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Stable machine-readable error code.
+          example: invalid_scope
+        message:
+          type: string
+          description: Human-readable error message.
+          example: 'scope must be one of: all, route_source, route_destination, route_any'

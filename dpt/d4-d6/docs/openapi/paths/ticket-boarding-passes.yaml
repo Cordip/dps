@@ -1,0 +1,69 @@
+get:
+  operationId: listTicketBoardingPasses
+  summary: List boarding passes for a ticket
+  description: Returns boarding passes created by online check-in for one ticket.
+  parameters:
+    - name: ticket_no
+      in: path
+      required: true
+      description: Ticket number.
+      schema:
+        type: string
+        pattern: "^\\d{13}$"
+        example: "0005433348362"
+  responses:
+    "200":
+      description: Boarding pass list for the ticket.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/BoardingPassListResponse.yaml
+          examples:
+            checkedInTicket:
+              summary: Ticket with boarding passes
+              value:
+                ticket_no: "0005433348362"
+                items:
+                  - ticket_no: "0005433348362"
+                    flight_id: 10817
+                    route_no: PG0370
+                    seat_no: 17B
+                  - ticket_no: "0005433348362"
+                    flight_id: 10935
+                    route_no: PG0179
+                    seat_no: 16A
+                  - ticket_no: "0005433348362"
+                    flight_id: 11108
+                    route_no: PG0408
+                    seat_no: 24C
+                  - ticket_no: "0005433348362"
+                    flight_id: 11264
+                    route_no: PG0482
+                    seat_no: 4B
+            notCheckedInTicket:
+              summary: Known ticket without check-in
+              value:
+                ticket_no: "0005433261815"
+                items: []
+    "400":
+      description: Invalid path parameter.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidTicketNo:
+              value:
+                error: invalid_ticket_no
+                message: ticket_no must be a 13-digit string
+    "404":
+      description: Ticket was not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            ticketNotFound:
+              value:
+                error: ticket_not_found
+                message: Ticket was not found

@@ -1,0 +1,21 @@
+# Local database dumps and generated data.
+*.sql.gz
+*.dump
+*.part
+*.backup
+
+data/*
+!data/.gitkeep
+
+# Local saved copy of the PostgresPro page; keep summarized notes instead.
+reference/postgrespro_demodb_2025.html
+reference/postgrespro_demodb_2025_files/
+
+# Local application/runtime state.
+.env
+application-local.yml
+service/.gradle/
+service/build/
+
+# Python
+**/__pycache__

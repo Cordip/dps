@@ -1,0 +1,15 @@
+type: object
+required:
+  - ticket_no
+  - items
+properties:
+  ticket_no:
+    type: string
+    pattern: "^\\d{13}$"
+    example: "0005433348362"
+  items:
+    type: array
+    description: Boarding passes created for this ticket. Empty when the ticket exists but has not been checked in.
+    maxItems: 8
+    items:
+      $ref: ./BoardingPass.yaml

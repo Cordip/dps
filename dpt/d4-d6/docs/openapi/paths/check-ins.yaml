@@ -1,0 +1,129 @@
+post:
+  operationId: createCheckIn
+  summary: Online check-in for a flight
+  description: |
+    Checks in one ticket through its first flight and creates boarding passes for all flights in the ticket.
+
+    This operation changes database state. The bundled Scalar example uses a real demo ticket;
+    after it is checked in once, repeating the same request returns already_checked_in.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../components/schemas/CheckInRequest.yaml
+        examples:
+          twoSegmentTicket:
+            value:
+              ticket_no: "0005433261815"
+              flight_id: 11051
+              seats:
+                - flight_id: 11051
+                  seat_no: 31J
+                - flight_id: 11220
+                  seat_no: 17A
+  responses:
+    "201":
+      description: Check-in completed and boarding passes created.
+      headers:
+        Location:
+          required: true
+          description: URL of boarding passes created for the ticket.
+          schema:
+            type: string
+            example: /api/v1/tickets/0005433261815/boarding-passes
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/CheckInResponse.yaml
+          examples:
+            checkedIn:
+              value:
+                ticket_no: "0005433261815"
+                checked_in_at: "2025-12-01T00:00:00+00:00"
+                boarding_passes:
+                  - ticket_no: "0005433261815"
+                    flight_id: 11051
+                    route_no: PG0356
+                    seat_no: 31J
+                  - ticket_no: "0005433261815"
+                    flight_id: 11220
+                    route_no: PG0574
+                    seat_no: 17A
+    "400":
+      description: Invalid request.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidRequest:
+              value:
+                error: invalid_request
+                message: request body contains unknown fields
+            invalidTicketNo:
+              value:
+                error: invalid_ticket_no
+                message: ticket_no must be a 13-digit string
+            invalidFlightId:
+              value:
+                error: invalid_flight_id
+                message: flight_id must be an integer
+            invalidSeats:
+              value:
+                error: invalid_seats
+                message: seats must contain exactly one seat for each flight in the ticket
+            invalidSeat:
+              value:
+                error: invalid_seat
+                message: One or more selected seats do not exist or do not match fare conditions
+    "404":
+      description: Ticket or flight reference was not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            ticketNotFound:
+              value:
+                error: ticket_not_found
+                message: Ticket was not found
+            flightNotFound:
+              value:
+                error: flight_not_found
+                message: Flight was not found
+            ticketSegmentNotFound:
+              value:
+                error: ticket_segment_not_found
+                message: Flight is not part of this ticket
+    "409":
+      description: Check-in cannot be completed because of current state.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            notFirstFlight:
+              value:
+                error: not_first_flight
+                message: Check-in must be started from the first flight in the ticket
+            alreadyCheckedIn:
+              value:
+                error: already_checked_in
+                message: This ticket is already checked in
+            checkinNotOpen:
+              value:
+                error: checkin_not_open
+                message: Check-in opens 24 hours before scheduled departure
+            checkinClosed:
+              value:
+                error: checkin_closed
+                message: Check-in is closed for this flight
+            flightCancelled:
+              value:
+                error: flight_cancelled
+                message: Cannot check in for a cancelled flight
+            seatUnavailable:
+              value:
+                error: seat_unavailable
+                message: One or more selected seats are not available

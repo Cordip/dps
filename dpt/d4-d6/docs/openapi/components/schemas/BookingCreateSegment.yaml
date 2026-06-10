@@ -1,0 +1,10 @@
+type: object
+additionalProperties: false
+required:
+  - flight_id
+properties:
+  flight_id:
+    type: integer
+    minimum: 1
+    description: Selected flight id from route search.
+    example: 11066

@@ -1,0 +1,26 @@
+type: object
+required:
+  - items
+  - limit
+  - offset
+  - has_more
+properties:
+  items:
+    type: array
+    items:
+      $ref: ./City.yaml
+  limit:
+    type: integer
+    minimum: 1
+    maximum: 500
+    description: Maximum number of items requested.
+    example: 100
+  offset:
+    type: integer
+    minimum: 0
+    description: Number of items skipped before this page.
+    example: 0
+  has_more:
+    type: boolean
+    description: Whether another page is available.
+    example: true

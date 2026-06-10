@@ -1,0 +1,25 @@
+type: object
+required:
+  - ticket_no
+  - flight_id
+  - route_no
+  - seat_no
+properties:
+  ticket_no:
+    type: string
+    pattern: "^\\d{13}$"
+    example: "0005433348362"
+  flight_id:
+    type: integer
+    minimum: 1
+    example: 11051
+  route_no:
+    type: string
+    description: Route number. This maps the task's "Flight no" wording to the 2025 schema field.
+    example: PG0356
+  seat_no:
+    type: string
+    minLength: 1
+    maxLength: 8
+    pattern: "^[0-9]{1,3}[A-Z]$"
+    example: 31J

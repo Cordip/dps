@@ -1,0 +1,103 @@
+get:
+  operationId: listAirportScheduledDepartures
+  summary: List scheduled departures for an airport
+  description: Returns regular outbound schedule rows for one origin airport.
+  parameters:
+    - name: airport_code
+      in: path
+      required: true
+      description: Stable IATA airport code. Case-insensitive in requests, uppercase in responses.
+      schema:
+        type: string
+        pattern: "^[A-Za-z]{3}$"
+        example: AMD
+    - name: limit
+      in: query
+      required: false
+      description: Maximum number of scheduled departure rows to return.
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 500
+    - name: offset
+      in: query
+      required: false
+      description: Number of scheduled departure rows to skip before returning the page.
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+  responses:
+    "200":
+      description: Scheduled departure list.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ScheduledDepartureListResponse.yaml
+          examples:
+            ahmedabadDepartures:
+              summary: Scheduled departures from Ahmedabad
+              value:
+                items:
+                  - route_no: PG0428
+                    days_of_week:
+                      - TU
+                    scheduled_time: "00:25"
+                    timezone: Asia/Kolkata
+                    destination:
+                      airport_code: SZX
+                  - route_no: PG0309
+                    days_of_week:
+                      - TU
+                      - TH
+                      - SA
+                      - SU
+                    scheduled_time: "00:50"
+                    timezone: Asia/Kolkata
+                    destination:
+                      airport_code: BLR
+                limit: 2
+                offset: 0
+                has_more: true
+            noDepartures:
+              summary: Known airport without outbound schedule rows
+              value:
+                items: []
+                limit: 100
+                offset: 0
+                has_more: false
+    "400":
+      description: Invalid query parameter.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidAirportCode:
+              summary: Invalid airport code format
+              value:
+                error: invalid_airport_code
+                message: airport_code must be a 3-letter IATA code
+            invalidLimit:
+              summary: Invalid limit
+              value:
+                error: invalid_limit
+                message: "limit must be an integer between 1 and 500"
+            invalidOffset:
+              summary: Invalid offset
+              value:
+                error: invalid_offset
+                message: "offset must be an integer greater than or equal to 0"
+    "404":
+      description: Airport was not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            airportNotFound:
+              summary: Unknown airport code
+              value:
+                error: airport_not_found
+                message: Airport was not found

@@ -1,0 +1,9 @@
+type: object
+required:
+  - airport_code
+properties:
+  airport_code:
+    type: string
+    pattern: "^[A-Z]{3}$"
+    description: Stable IATA airport code.
+    example: AMD

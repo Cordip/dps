@@ -1,0 +1,73 @@
+get:
+  operationId: getBookingByRef
+  summary: Get booking by reference
+  description: Returns one booking by stable booking reference.
+  parameters:
+    - name: book_ref
+      in: path
+      required: true
+      description: Booking reference. Case-insensitive in requests, uppercase in responses.
+      schema:
+        type: string
+        pattern: "^[A-Za-z0-9]{6}$"
+        example: 002MYE
+  responses:
+    "200":
+      description: Booking found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Booking.yaml
+          examples:
+            createdBooking:
+              value:
+                book_ref: 002MYE
+                book_date: "2025-10-04T03:55:10+00:00"
+                passenger:
+                  passenger_id: "CN 9510405168161"
+                  passenger_name: Weizhong Li
+                booking_class: Economy
+                total_price:
+                  amount: "5500.00"
+                  currency: RUB
+                trips:
+                  - direction: outbound
+                    ticket_no: "0005433182226"
+                    total_price:
+                      amount: "5500.00"
+                      currency: RUB
+                    segments:
+                      - sequence: 1
+                        flight_id: 11014
+                        route_no: PG0404
+                        departure_airport:
+                          airport_code: PKX
+                        arrival_airport:
+                          airport_code: HGH
+                        scheduled_departure_at: "2025-12-01T02:15:00+08:00"
+                        scheduled_arrival_at: "2025-12-01T04:05:00+08:00"
+                        price:
+                          amount: "5500.00"
+                          currency: RUB
+    "400":
+      description: Invalid booking reference.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidBookRef:
+              value:
+                error: invalid_book_ref
+                message: book_ref must be a 6-character alphanumeric string
+    "404":
+      description: Booking was not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            bookingNotFound:
+              value:
+                error: booking_not_found
+                message: Booking was not found

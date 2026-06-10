@@ -1,0 +1,251 @@
+get:
+  operationId: listAirports
+  summary: List available airports
+  description: Returns airports from the airport directory or from the route network.
+  parameters:
+    - name: scope
+      in: query
+      required: false
+      description: Selects which airport set to return.
+      schema:
+        type: string
+        default: route_any
+        example: all
+        enum:
+          - all
+          - route_source
+          - route_destination
+          - route_any
+    - name: lang
+      in: query
+      required: false
+      description: Selects language for localized airport, city, and country names.
+      schema:
+        type: string
+        default: en
+        example: en
+        enum:
+          - en
+          - ru
+    - name: search
+      in: query
+      required: false
+      description: Tokenized multilingual free-text search across airport code, airport name, city, and country in English, Russian, and transliterated Russian aliases. All tokens must match at least one searchable field; results are ranked by exact, prefix, substring, then trigram similarity.
+      schema:
+        type: string
+        example: moskva svo
+    - name: country
+      in: query
+      required: false
+      description: Exact country filter using the selected display language. For full city-directory lookup, combine with city and scope=all.
+      schema:
+        type: string
+        example: Russia
+    - name: city
+      in: query
+      required: false
+      description: Exact city filter using the selected display language. For full city-directory lookup, combine with country and scope=all.
+      schema:
+        type: string
+        example: Moscow
+    - name: limit
+      in: query
+      required: false
+      description: Maximum number of airports to return.
+      schema:
+        type: integer
+        default: 100
+        example: 5
+        minimum: 1
+        maximum: 500
+    - name: offset
+      in: query
+      required: false
+      description: Number of items to skip before returning the page.
+      schema:
+        type: integer
+        default: 0
+        example: 0
+        minimum: 0
+  responses:
+    "200":
+      description: Airport list.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/AirportListResponse.yaml
+          examples:
+            englishRouteAny:
+              summary: English route source or destination airports
+              value:
+                items:
+                  - airport_code: ATL
+                    airport_name: Hartsfield-Jackson
+                    city: Atlanta
+                    country: United States
+                    coordinates:
+                      longitude: -84.4281
+                      latitude: 33.6367
+                    timezone: America/New_York
+                  - airport_code: DEL
+                    airport_name: Indira Gandhi
+                    city: Delhi
+                    country: India
+                    coordinates:
+                      longitude: 77.1031
+                      latitude: 28.5562
+                    timezone: Asia/Kolkata
+                  - airport_code: BLR
+                    airport_name: Kempegowda
+                    city: Bangalore
+                    country: India
+                    coordinates:
+                      longitude: 77.7063
+                      latitude: 13.1986
+                    timezone: Asia/Kolkata
+                  - airport_code: AMD
+                    airport_name: Sardar Vallabhbhai Patel
+                    city: Ahmedabad
+                    country: India
+                    coordinates:
+                      longitude: 72.6347
+                      latitude: 23.0772
+                    timezone: Asia/Kolkata
+                limit: 100
+                offset: 0
+                has_more: false
+            englishAll:
+              summary: English airport page
+              value:
+                items:
+                  - airport_code: ATL
+                    airport_name: Hartsfield-Jackson
+                    city: Atlanta
+                    country: United States
+                    coordinates:
+                      longitude: -84.4281
+                      latitude: 33.6367
+                    timezone: America/New_York
+                  - airport_code: DEL
+                    airport_name: Indira Gandhi
+                    city: Delhi
+                    country: India
+                    coordinates:
+                      longitude: 77.1031
+                      latitude: 28.5562
+                    timezone: Asia/Kolkata
+                limit: 2
+                offset: 0
+                has_more: true
+            russianAll:
+              summary: Russian airport page
+              value:
+                items:
+                  - airport_code: AMD
+                    airport_name: Аэропорт имени Сардара Валлаббхаи Пателя
+                    city: Ахмадабад
+                    country: Индия
+                    coordinates:
+                      longitude: 72.6347
+                      latitude: 23.0772
+                    timezone: Asia/Kolkata
+                  - airport_code: DEL
+                    airport_name: Индира Ганди
+                    city: Дели
+                    country: Индия
+                    coordinates:
+                      longitude: 77.1031
+                      latitude: 28.5562
+                    timezone: Asia/Kolkata
+                limit: 2
+                offset: 0
+                has_more: true
+            englishTokenSearch:
+              summary: English transliterated token search
+              value:
+                items:
+                  - airport_code: SVO
+                    airport_name: Sheremetyevo
+                    city: Moscow
+                    country: Russia
+                    coordinates:
+                      longitude: 37.4146
+                      latitude: 55.9726
+                    timezone: Europe/Moscow
+                limit: 5
+                offset: 0
+                has_more: false
+            englishWithinCity:
+              summary: English airports within city
+              value:
+                items:
+                  - airport_code: BKA
+                    airport_name: Bykovo
+                    city: Moscow
+                    country: Russia
+                    coordinates:
+                      longitude: 38.06
+                      latitude: 55.6172
+                    timezone: Europe/Moscow
+                  - airport_code: DME
+                    airport_name: Domodedovo
+                    city: Moscow
+                    country: Russia
+                    coordinates:
+                      longitude: 37.9063
+                      latitude: 55.4088
+                    timezone: Europe/Moscow
+                  - airport_code: OSF
+                    airport_name: Ostafyevo
+                    city: Moscow
+                    country: Russia
+                    coordinates:
+                      longitude: 37.5072
+                      latitude: 55.5117
+                    timezone: Europe/Moscow
+                  - airport_code: SVO
+                    airport_name: Sheremetyevo
+                    city: Moscow
+                    country: Russia
+                    coordinates:
+                      longitude: 37.4146
+                      latitude: 55.9726
+                    timezone: Europe/Moscow
+                  - airport_code: VKO
+                    airport_name: Vnukovo
+                    city: Moscow
+                    country: Russia
+                    coordinates:
+                      longitude: 37.2615
+                      latitude: 55.5915
+                    timezone: Europe/Moscow
+                limit: 5
+                offset: 0
+                has_more: false
+    "400":
+      description: Invalid query parameter.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidScope:
+              summary: Invalid scope
+              value:
+                error: invalid_scope
+                message: "scope must be one of: all, route_source, route_destination, route_any"
+            invalidLang:
+              summary: Invalid lang
+              value:
+                error: invalid_lang
+                message: "lang must be one of: en, ru"
+            invalidLimit:
+              summary: Invalid limit
+              value:
+                error: invalid_limit
+                message: "limit must be an integer between 1 and 500"
+            invalidOffset:
+              summary: Invalid offset
+              value:
+                error: invalid_offset
+                message: "offset must be an integer greater than or equal to 0"

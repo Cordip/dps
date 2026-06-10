@@ -1,0 +1,20 @@
+type: object
+additionalProperties: false
+required:
+  - direction
+  - segments
+properties:
+  direction:
+    type: string
+    enum:
+      - outbound
+      - return
+    description: Trip direction. Maps to tickets.outbound.
+    example: outbound
+  segments:
+    type: array
+    minItems: 1
+    maxItems: 8
+    description: Selected flight ids in trip order.
+    items:
+      $ref: ./BookingCreateSegment.yaml

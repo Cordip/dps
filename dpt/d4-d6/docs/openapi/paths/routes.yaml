@@ -1,0 +1,294 @@
+get:
+  operationId: listRoutes
+  summary: List routes connecting two points
+  description: Finds bookable route options between two points on a specific departure date.
+  parameters:
+    - name: from_type
+      in: query
+      required: true
+      description: Type of source point.
+      schema:
+        type: string
+        example: airport
+        enum:
+          - airport
+          - city
+    - name: to_type
+      in: query
+      required: true
+      description: Type of destination point.
+      schema:
+        type: string
+        example: airport
+        enum:
+          - airport
+          - city
+    - name: lang
+      in: query
+      required: false
+      description: Selects language for city point matching.
+      schema:
+        type: string
+        default: en
+        enum:
+          - en
+          - ru
+    - name: from_airport
+      in: query
+      required: false
+      description: Source airport code. Required when from_type=airport.
+      schema:
+        type: string
+        pattern: "^[A-Za-z]{3}$"
+        example: AMD
+    - name: from_country
+      in: query
+      required: false
+      description: Source country. Required when from_type=city.
+      schema:
+        type: string
+        example: India
+    - name: from_city
+      in: query
+      required: false
+      description: Source city. Required when from_type=city.
+      schema:
+        type: string
+        example: Ahmedabad
+    - name: to_airport
+      in: query
+      required: false
+      description: Destination airport code. Required when to_type=airport.
+      schema:
+        type: string
+        pattern: "^[A-Za-z]{3}$"
+        example: BOM
+    - name: to_country
+      in: query
+      required: false
+      description: Destination country. Required when to_type=city.
+      schema:
+        type: string
+        example: India
+    - name: to_city
+      in: query
+      required: false
+      description: Destination city. Required when to_type=city.
+      schema:
+        type: string
+        example: Mumbai
+    - name: departure_date
+      in: query
+      required: true
+      description: Local departure date for the first segment in the timezone of the first departure airport.
+      schema:
+        type: string
+        format: date
+        example: "2025-12-01"
+    - name: booking_class
+      in: query
+      required: true
+      description: Requested booking class.
+      schema:
+        type: string
+        example: Economy
+        enum:
+          - Economy
+          - Comfort
+          - Business
+    - name: max_connections
+      in: query
+      required: true
+      description: Maximum number of connections. unbound means no user-level connection limit, but the API still applies an internal cap of 8 segments.
+      schema:
+        type: string
+        example: "0"
+        enum:
+          - "0"
+          - "1"
+          - "2"
+          - "3"
+          - unbound
+    - name: sort
+      in: query
+      required: false
+      description: Sort order.
+      schema:
+        type: string
+        default: duration
+        example: duration
+        enum:
+          - duration
+          - price
+          - departure_time
+    - name: limit
+      in: query
+      required: false
+      description: Maximum number of route options to return.
+      schema:
+        type: integer
+        default: 100
+        example: 1
+        minimum: 1
+        maximum: 500
+    - name: offset
+      in: query
+      required: false
+      description: Number of route options to skip before returning the page.
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+  responses:
+    "200":
+      description: Route option list.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/RouteListResponse.yaml
+          examples:
+            directRoute:
+              summary: Direct airport-to-airport route
+              value:
+                items:
+                  - booking_class: Economy
+                    total_duration: PT1H5M
+                    total_price:
+                      amount: "3250.00"
+                      currency: RUB
+                    segments:
+                      - sequence: 1
+                        flight_id: 11066
+                        route_no: PG0055
+                        departure_airport:
+                          airport_code: AMD
+                        arrival_airport:
+                          airport_code: BOM
+                        scheduled_departure_at: "2025-12-01T07:45:00+05:30"
+                        scheduled_arrival_at: "2025-12-01T08:50:00+05:30"
+                        duration: PT1H5M
+                        price:
+                          amount: "3250.00"
+                          currency: RUB
+                limit: 1
+                offset: 0
+                has_more: false
+            connectedRoute:
+              summary: Route with one connection
+              value:
+                items:
+                  - booking_class: Economy
+                    total_duration: PT11H30M
+                    total_price:
+                      amount: "8000.00"
+                      currency: RUB
+                    segments:
+                      - sequence: 1
+                        flight_id: 11055
+                        route_no: PG0526
+                        departure_airport:
+                          airport_code: ORY
+                        arrival_airport:
+                          airport_code: VIE
+                        scheduled_departure_at: "2025-12-01T01:50:00+01:00"
+                        scheduled_arrival_at: "2025-12-01T03:40:00+01:00"
+                        duration: PT1H50M
+                        price:
+                          amount: "5500.00"
+                          currency: RUB
+                      - sequence: 2
+                        flight_id: 11126
+                        route_no: PG0486
+                        departure_airport:
+                          airport_code: VIE
+                        arrival_airport:
+                          airport_code: PRG
+                        scheduled_departure_at: "2025-12-01T12:30:00+01:00"
+                        scheduled_arrival_at: "2025-12-01T13:20:00+01:00"
+                        duration: PT50M
+                        price:
+                          amount: "2500.00"
+                          currency: RUB
+                limit: 1
+                offset: 0
+                has_more: true
+            noRoutes:
+              summary: Valid points with no matching routes
+              value:
+                items: []
+                limit: 100
+                offset: 0
+                has_more: false
+    "400":
+      description: Invalid query parameter.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidPointType:
+              value:
+                error: invalid_point_type
+                message: "from_type and to_type must be one of: airport, city"
+            missingPointField:
+              value:
+                error: missing_point_field
+                message: "airport point requires airport code; city point requires country and city"
+            invalidDepartureDate:
+              value:
+                error: invalid_departure_date
+                message: "departure_date must be a valid date in YYYY-MM-DD format"
+            invalidBookingClass:
+              value:
+                error: invalid_booking_class
+                message: "booking_class must be one of: Economy, Comfort, Business"
+            invalidMaxConnections:
+              value:
+                error: invalid_max_connections
+                message: "max_connections must be one of: 0, 1, 2, 3, unbound"
+            invalidSort:
+              value:
+                error: invalid_sort
+                message: "sort must be one of: duration, price, departure_time"
+            invalidLang:
+              value:
+                error: invalid_lang
+                message: "lang must be one of: en, ru"
+            invalidAirportCode:
+              value:
+                error: invalid_airport_code
+                message: airport_code must be a 3-letter IATA code
+            invalidLimit:
+              value:
+                error: invalid_limit
+                message: "limit must be an integer between 1 and 500"
+            invalidOffset:
+              value:
+                error: invalid_offset
+                message: "offset must be an integer greater than or equal to 0"
+    "404":
+      description: Source or destination point was not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            airportNotFound:
+              value:
+                error: airport_not_found
+                message: Airport was not found
+            cityNotFound:
+              value:
+                error: city_not_found
+                message: City was not found
+    "503":
+      description: Route search exceeded internal safety limits.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            routeSearchTooComplex:
+              value:
+                error: route_search_too_complex
+                message: Route search exceeded the internal safety cap; narrow the request

@@ -1,0 +1,80 @@
+get:
+  operationId: listTicketFlightSeats
+  summary: List seats for a ticket flight
+  description: Returns seat availability for one flight inside one ticket.
+  parameters:
+    - name: ticket_no
+      in: path
+      required: true
+      description: Ticket number.
+      schema:
+        type: string
+        pattern: "^\\d{13}$"
+        example: "0005433261815"
+    - name: flight_id
+      in: path
+      required: true
+      description: Flight id inside the ticket.
+      schema:
+        type: integer
+        minimum: 1
+        example: 11051
+  responses:
+    "200":
+      description: Seat list for this ticket flight.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/SeatMapResponse.yaml
+          examples:
+            economySeats:
+              value:
+                ticket_no: "0005433261815"
+                flight_id: 11051
+                items:
+                  - seat_no: 1A
+                    fare_conditions: Business
+                    status: occupied
+                  - seat_no: 31J
+                    fare_conditions: Economy
+                    status: available
+                  - seat_no: 32D
+                    fare_conditions: Economy
+                    status: available
+                  - seat_no: 20C
+                    fare_conditions: Comfort
+                    status: blocked
+    "400":
+      description: Invalid path parameter.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidTicketNo:
+              value:
+                error: invalid_ticket_no
+                message: ticket_no must be a 13-digit string
+            invalidFlightId:
+              value:
+                error: invalid_flight_id
+                message: flight_id must be an integer
+    "404":
+      description: Ticket, flight, or ticket segment was not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            ticketNotFound:
+              value:
+                error: ticket_not_found
+                message: Ticket was not found
+            flightNotFound:
+              value:
+                error: flight_not_found
+                message: Flight was not found
+            ticketSegmentNotFound:
+              value:
+                error: ticket_segment_not_found
+                message: Flight is not part of this ticket

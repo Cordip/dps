@@ -1,0 +1,10 @@
+name: d5-openapi-tools
+
+services:
+  scalar:
+    image: scalarapi/api-reference:latest
+    container_name: d5-openapi-scalar
+    ports:
+      - "8083:8080"
+    volumes:
+      - ../docs/openapi/openapi.bundle.yaml:/docs/openapi.bundle.yaml:ro

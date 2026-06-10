@@ -1,0 +1,102 @@
+openapi: 3.0.3
+info:
+  title: D5 Flights REST API
+  version: 0.1.0
+  description: REST API design for D5.
+
+security: []
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Local Axum D6 service
+  - url: /api/v1
+    description: API v1 relative base path
+
+paths:
+  /cities:
+    $ref: ./paths/cities.yaml
+  /airports:
+    $ref: ./paths/airports.yaml
+  /airports/{airport_code}:
+    $ref: ./paths/airports-by-code.yaml
+  /airports/{airport_code}/schedule/arrivals:
+    $ref: ./paths/airport-schedule-arrivals.yaml
+  /airports/{airport_code}/schedule/departures:
+    $ref: ./paths/airport-schedule-departures.yaml
+  /routes:
+    $ref: ./paths/routes.yaml
+  /bookings:
+    $ref: ./paths/bookings.yaml
+  /bookings/{book_ref}:
+    $ref: ./paths/bookings-by-ref.yaml
+  /check-ins:
+    $ref: ./paths/check-ins.yaml
+  /tickets/{ticket_no}/flights/{flight_id}/seats:
+    $ref: ./paths/ticket-flight-seats.yaml
+  /tickets/{ticket_no}/boarding-passes:
+    $ref: ./paths/ticket-boarding-passes.yaml
+
+components:
+  schemas:
+    AirportListResponse:
+      $ref: ./components/schemas/AirportListResponse.yaml
+    Airport:
+      $ref: ./components/schemas/Airport.yaml
+    AirportRef:
+      $ref: ./components/schemas/AirportRef.yaml
+    Coordinates:
+      $ref: ./components/schemas/Coordinates.yaml
+    Price:
+      $ref: ./components/schemas/Price.yaml
+    RouteListResponse:
+      $ref: ./components/schemas/RouteListResponse.yaml
+    RouteOption:
+      $ref: ./components/schemas/RouteOption.yaml
+    RouteSegment:
+      $ref: ./components/schemas/RouteSegment.yaml
+    Booking:
+      $ref: ./components/schemas/Booking.yaml
+    BookingCreateRequest:
+      $ref: ./components/schemas/BookingCreateRequest.yaml
+    BookingCreateTrip:
+      $ref: ./components/schemas/BookingCreateTrip.yaml
+    BookingCreateSegment:
+      $ref: ./components/schemas/BookingCreateSegment.yaml
+    BookingPassenger:
+      $ref: ./components/schemas/BookingPassenger.yaml
+    BookingPassengerInput:
+      $ref: ./components/schemas/BookingPassengerInput.yaml
+    BookingTrip:
+      $ref: ./components/schemas/BookingTrip.yaml
+    BookingSegment:
+      $ref: ./components/schemas/BookingSegment.yaml
+    CheckInRequest:
+      $ref: ./components/schemas/CheckInRequest.yaml
+    CheckInSeatRequest:
+      $ref: ./components/schemas/CheckInSeatRequest.yaml
+    CheckInResponse:
+      $ref: ./components/schemas/CheckInResponse.yaml
+    BoardingPass:
+      $ref: ./components/schemas/BoardingPass.yaml
+    BoardingPassListResponse:
+      $ref: ./components/schemas/BoardingPassListResponse.yaml
+    SeatMapResponse:
+      $ref: ./components/schemas/SeatMapResponse.yaml
+    SeatMapSeat:
+      $ref: ./components/schemas/SeatMapSeat.yaml
+    ScheduledArrivalListResponse:
+      $ref: ./components/schemas/ScheduledArrivalListResponse.yaml
+    ScheduledArrival:
+      $ref: ./components/schemas/ScheduledArrival.yaml
+    ScheduledDepartureListResponse:
+      $ref: ./components/schemas/ScheduledDepartureListResponse.yaml
+    ScheduledDeparture:
+      $ref: ./components/schemas/ScheduledDeparture.yaml
+    Weekday:
+      $ref: ./components/schemas/Weekday.yaml
+    CityListResponse:
+      $ref: ./components/schemas/CityListResponse.yaml
+    City:
+      $ref: ./components/schemas/City.yaml
+    Error:
+      $ref: ./components/schemas/Error.yaml

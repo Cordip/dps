@@ -1,0 +1,18 @@
+type: object
+additionalProperties: false
+required:
+  - passenger_id
+  - passenger_name
+properties:
+  passenger_id:
+    type: string
+    minLength: 1
+    maxLength: 64
+    description: Passenger document identifier from tickets.passenger_id.
+    example: "RU 2714075620824"
+  passenger_name:
+    type: string
+    minLength: 1
+    maxLength: 200
+    description: Passenger full name from tickets.passenger_name.
+    example: Nadezhda Sergeeva

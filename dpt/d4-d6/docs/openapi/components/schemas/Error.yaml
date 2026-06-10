@@ -1,0 +1,13 @@
+type: object
+required:
+  - error
+  - message
+properties:
+  error:
+    type: string
+    description: Stable machine-readable error code.
+    example: invalid_scope
+  message:
+    type: string
+    description: Human-readable error message.
+    example: "scope must be one of: all, route_source, route_destination, route_any"

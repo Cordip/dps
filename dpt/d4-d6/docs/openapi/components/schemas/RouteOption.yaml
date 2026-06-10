@@ -1,0 +1,25 @@
+type: object
+required:
+  - booking_class
+  - total_duration
+  - total_price
+  - segments
+properties:
+  booking_class:
+    type: string
+    enum:
+      - Economy
+      - Comfort
+      - Business
+    example: Economy
+  total_duration:
+    type: string
+    description: Total route option duration in ISO 8601 duration format, including connection time.
+    example: PT6H5M
+  total_price:
+    $ref: ./Price.yaml
+  segments:
+    type: array
+    minItems: 1
+    items:
+      $ref: ./RouteSegment.yaml

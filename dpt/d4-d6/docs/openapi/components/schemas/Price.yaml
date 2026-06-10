@@ -1,0 +1,16 @@
+type: object
+required:
+  - amount
+  - currency
+properties:
+  amount:
+    type: string
+    description: Decimal money amount encoded as string.
+    pattern: "^\\d+\\.\\d{2}$"
+    example: "12500.00"
+  currency:
+    type: string
+    description: ISO 4217 currency code. Current project uses RUB.
+    enum:
+      - RUB
+    example: RUB

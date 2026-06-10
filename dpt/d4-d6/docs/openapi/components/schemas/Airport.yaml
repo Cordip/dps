@@ -1,0 +1,32 @@
+type: object
+required:
+  - airport_code
+  - airport_name
+  - city
+  - country
+  - coordinates
+  - timezone
+properties:
+  airport_code:
+    type: string
+    pattern: "^[A-Z]{3}$"
+    description: Stable IATA airport code.
+    example: SVO
+  airport_name:
+    type: string
+    description: Localized airport name.
+    example: Sheremetyevo
+  city:
+    type: string
+    description: Localized city name.
+    example: Moscow
+  country:
+    type: string
+    description: Localized country name.
+    example: Russia
+  coordinates:
+    $ref: ./Coordinates.yaml
+  timezone:
+    type: string
+    description: Airport time zone.
+    example: Europe/Moscow

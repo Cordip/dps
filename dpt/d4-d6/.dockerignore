@@ -1,0 +1,14 @@
+.git
+.gitignore
+
+data/
+docs/
+compose/
+sql/
+scripts/
+
+target/
+service/target/
+
+node_modules/
+**/.DS_Store

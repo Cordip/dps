@@ -1,0 +1,231 @@
+get:
+  operationId: listCities
+  summary: List available cities
+  description: Returns country and city pairs from the airport directory or from the route network.
+  parameters:
+    - name: scope
+      in: query
+      required: false
+      description: Selects which city set to return.
+      schema:
+        type: string
+        default: route_any
+        example: all
+        enum:
+          - all
+          - route_source
+          - route_destination
+          - route_any
+    - name: lang
+      in: query
+      required: false
+      description: Selects language for localized city and country names.
+      schema:
+        type: string
+        default: en
+        example: en
+        enum:
+          - en
+          - ru
+    - name: search
+      in: query
+      required: false
+      description: Tokenized multilingual search across city and country names in English, Russian, and transliterated Russian aliases. lang only selects response display language.
+      schema:
+        type: string
+        example: moskva
+    - name: limit
+      in: query
+      required: false
+      description: Maximum number of cities to return.
+      schema:
+        type: integer
+        default: 100
+        example: 5
+        minimum: 1
+        maximum: 500
+    - name: offset
+      in: query
+      required: false
+      description: Number of items to skip before returning the page.
+      schema:
+        type: integer
+        default: 0
+        example: 0
+        minimum: 0
+  responses:
+    "200":
+      description: City list.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/CityListResponse.yaml
+          examples:
+            englishRouteAny:
+              summary: English route source or destination cities
+              value:
+                items:
+                  - city: Ahmedabad
+                    country: India
+                  - city: Atlanta
+                    country: United States
+                  - city: Bangalore
+                    country: India
+                  - city: Delhi
+                    country: India
+                limit: 5
+                offset: 0
+                has_more: false
+            englishAll:
+              summary: English all cities
+              value:
+                items:
+                  - city: Ahmedabad
+                    country: India
+                  - city: Atlanta
+                    country: United States
+                  - city: Bangalore
+                    country: India
+                  - city: Delhi
+                    country: India
+                  - city: Moscow
+                    country: Russia
+                  - city: Novosibirsk
+                    country: Russia
+                limit: 100
+                offset: 0
+                has_more: false
+            englishLimited:
+              summary: English limited first page
+              value:
+                items:
+                  - city: Ahmedabad
+                    country: India
+                  - city: Atlanta
+                    country: United States
+                limit: 2
+                offset: 0
+                has_more: true
+            englishRouteSource:
+              summary: English route source cities
+              value:
+                items:
+                  - city: Ahmedabad
+                    country: India
+                  - city: Atlanta
+                    country: United States
+                limit: 100
+                offset: 0
+                has_more: false
+            englishRouteDestination:
+              summary: English route destination cities
+              value:
+                items:
+                  - city: Bangalore
+                    country: India
+                  - city: Delhi
+                    country: India
+                limit: 100
+                offset: 0
+                has_more: false
+            englishSearch:
+              summary: English transliterated search result
+              value:
+                items:
+                  - city: Moscow
+                    country: Russia
+                limit: 5
+                offset: 0
+                has_more: false
+            russianAll:
+              summary: Russian all cities
+              value:
+                items:
+                  - city: Атланта
+                    country: США
+                  - city: Ахмадабад
+                    country: Индия
+                  - city: Бангалор
+                    country: Индия
+                  - city: Дели
+                    country: Индия
+                  - city: Москва
+                    country: Россия
+                  - city: Новосибирск
+                    country: Россия
+                limit: 100
+                offset: 0
+                has_more: false
+            russianRouteSource:
+              summary: Russian route source cities
+              value:
+                items:
+                  - city: Атланта
+                    country: США
+                  - city: Ахмадабад
+                    country: Индия
+                limit: 100
+                offset: 0
+                has_more: false
+            russianRouteDestination:
+              summary: Russian route destination cities
+              value:
+                items:
+                  - city: Бангалор
+                    country: Индия
+                  - city: Дели
+                    country: Индия
+                limit: 100
+                offset: 0
+                has_more: false
+            russianRouteAny:
+              summary: Russian route source or destination cities
+              value:
+                items:
+                  - city: Атланта
+                    country: США
+                  - city: Ахмадабад
+                    country: Индия
+                  - city: Бангалор
+                    country: Индия
+                  - city: Дели
+                    country: Индия
+                limit: 100
+                offset: 0
+                has_more: false
+            russianSearch:
+              summary: Russian cross-language search result
+              value:
+                items:
+                  - city: Москва
+                    country: Россия
+                limit: 5
+                offset: 0
+                has_more: false
+    "400":
+      description: Invalid query parameter.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidScope:
+              summary: Invalid scope
+              value:
+                error: invalid_scope
+                message: "scope must be one of: all, route_source, route_destination, route_any"
+            invalidLang:
+              summary: Invalid lang
+              value:
+                error: invalid_lang
+                message: "lang must be one of: en, ru"
+            invalidLimit:
+              summary: Invalid limit
+              value:
+                error: invalid_limit
+                message: "limit must be an integer between 1 and 500"
+            invalidOffset:
+              summary: Invalid offset
+              value:
+                error: invalid_offset
+                message: "offset must be an integer greater than or equal to 0"

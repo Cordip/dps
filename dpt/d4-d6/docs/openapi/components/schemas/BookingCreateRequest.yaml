@@ -1,0 +1,24 @@
+type: object
+additionalProperties: false
+required:
+  - booking_class
+  - passenger
+  - trips
+properties:
+  booking_class:
+    type: string
+    enum:
+      - Economy
+      - Comfort
+      - Business
+    description: Fare condition to use for all selected trips.
+    example: Economy
+  passenger:
+    $ref: ./BookingPassengerInput.yaml
+  trips:
+    type: array
+    minItems: 1
+    maxItems: 2
+    description: One outbound trip and optionally one return trip.
+    items:
+      $ref: ./BookingCreateTrip.yaml

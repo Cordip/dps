@@ -1,0 +1,41 @@
+type: object
+required:
+  - sequence
+  - flight_id
+  - route_no
+  - departure_airport
+  - arrival_airport
+  - scheduled_departure_at
+  - scheduled_arrival_at
+  - price
+properties:
+  sequence:
+    type: integer
+    minimum: 1
+    description: Segment order inside trip.
+    example: 1
+  flight_id:
+    type: integer
+    minimum: 1
+    description: Stable flight id.
+    example: 11066
+  route_no:
+    type: string
+    description: Route number. This maps the task's "Flight no" wording to the 2025 schema field.
+    example: PG0055
+  departure_airport:
+    $ref: ./AirportRef.yaml
+  arrival_airport:
+    $ref: ./AirportRef.yaml
+  scheduled_departure_at:
+    type: string
+    format: date-time
+    description: Scheduled departure datetime with offset.
+    example: "2025-12-01T07:45:00+05:30"
+  scheduled_arrival_at:
+    type: string
+    format: date-time
+    description: Scheduled arrival datetime with offset.
+    example: "2025-12-01T08:50:00+05:30"
+  price:
+    $ref: ./Price.yaml

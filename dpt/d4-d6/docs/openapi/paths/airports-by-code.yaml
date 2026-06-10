@@ -1,0 +1,82 @@
+get:
+  operationId: getAirportByCode
+  summary: Get airport by code
+  description: Returns one airport by stable IATA airport code.
+  parameters:
+    - name: airport_code
+      in: path
+      required: true
+      description: Stable IATA airport code. Case-insensitive in requests, uppercase in responses.
+      schema:
+        type: string
+        pattern: "^[A-Za-z]{3}$"
+        example: SVO
+    - name: lang
+      in: query
+      required: false
+      description: Selects language for localized airport, city, and country names.
+      schema:
+        type: string
+        default: en
+        enum:
+          - en
+          - ru
+  responses:
+    "200":
+      description: Airport found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Airport.yaml
+          examples:
+            englishSheremetyevo:
+              summary: English airport
+              value:
+                airport_code: SVO
+                airport_name: Sheremetyevo
+                city: Moscow
+                country: Russia
+                coordinates:
+                  longitude: 37.4146
+                  latitude: 55.9726
+                timezone: Europe/Moscow
+            russianSheremetyevo:
+              summary: Russian airport
+              value:
+                airport_code: SVO
+                airport_name: Шереметьево
+                city: Москва
+                country: Россия
+                coordinates:
+                  longitude: 37.4146
+                  latitude: 55.9726
+                timezone: Europe/Moscow
+    "400":
+      description: Invalid query parameter.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidAirportCode:
+              summary: Invalid airport code format
+              value:
+                error: invalid_airport_code
+                message: airport_code must be a 3-letter IATA code
+            invalidLang:
+              summary: Invalid lang
+              value:
+                error: invalid_lang
+                message: "lang must be one of: en, ru"
+    "404":
+      description: Airport was not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            airportNotFound:
+              summary: Unknown airport code
+              value:
+                error: airport_not_found
+                message: Airport was not found

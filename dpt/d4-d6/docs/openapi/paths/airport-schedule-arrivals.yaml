@@ -1,0 +1,105 @@
+get:
+  operationId: listAirportScheduledArrivals
+  summary: List scheduled arrivals for an airport
+  description: Returns regular inbound schedule rows for one destination airport.
+  parameters:
+    - name: airport_code
+      in: path
+      required: true
+      description: Stable IATA airport code. Case-insensitive in requests, uppercase in responses.
+      schema:
+        type: string
+        pattern: "^[A-Za-z]{3}$"
+        example: BOM
+    - name: limit
+      in: query
+      required: false
+      description: Maximum number of scheduled arrival rows to return.
+      schema:
+        type: integer
+        default: 100
+        minimum: 1
+        maximum: 500
+    - name: offset
+      in: query
+      required: false
+      description: Number of scheduled arrival rows to skip before returning the page.
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
+  responses:
+    "200":
+      description: Scheduled arrival list.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ScheduledArrivalListResponse.yaml
+          examples:
+            mumbaiArrivals:
+              summary: Scheduled arrivals for Mumbai
+              value:
+                items:
+                  - route_no: PG0252
+                    days_of_week:
+                      - MO
+                    scheduled_time: "00:05"
+                    timezone: Asia/Kolkata
+                    origin:
+                      airport_code: BER
+                  - route_no: PG0459
+                    days_of_week:
+                      - TU
+                      - WE
+                      - TH
+                      - FR
+                      - SA
+                      - SU
+                    scheduled_time: "01:20"
+                    timezone: Asia/Kolkata
+                    origin:
+                      airport_code: LKO
+                limit: 2
+                offset: 0
+                has_more: true
+            noArrivals:
+              summary: Known airport without inbound schedule rows
+              value:
+                items: []
+                limit: 100
+                offset: 0
+                has_more: false
+    "400":
+      description: Invalid query parameter.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            invalidAirportCode:
+              summary: Invalid airport code format
+              value:
+                error: invalid_airport_code
+                message: airport_code must be a 3-letter IATA code
+            invalidLimit:
+              summary: Invalid limit
+              value:
+                error: invalid_limit
+                message: "limit must be an integer between 1 and 500"
+            invalidOffset:
+              summary: Invalid offset
+              value:
+                error: invalid_offset
+                message: "offset must be an integer greater than or equal to 0"
+    "404":
+      description: Airport was not found.
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/Error.yaml
+          examples:
+            airportNotFound:
+              summary: Unknown airport code
+              value:
+                error: airport_not_found
+                message: Airport was not found

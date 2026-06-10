@@ -1,0 +1,20 @@
+type: object
+required:
+  - ticket_no
+  - flight_id
+  - items
+properties:
+  ticket_no:
+    type: string
+    pattern: "^\\d{13}$"
+    example: "0005433261815"
+  flight_id:
+    type: integer
+    minimum: 1
+    example: 11051
+  items:
+    type: array
+    description: Full seat map for this flight/ticket context. This is a bounded list limited by aircraft capacity, not a paginated directory.
+    maxItems: 1000
+    items:
+      $ref: ./SeatMapSeat.yaml

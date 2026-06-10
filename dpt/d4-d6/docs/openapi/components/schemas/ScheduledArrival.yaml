@@ -1,0 +1,32 @@
+type: object
+required:
+  - route_no
+  - days_of_week
+  - scheduled_time
+  - timezone
+  - origin
+properties:
+  route_no:
+    type: string
+    description: Route number. This maps the task's "Flight no" wording to the 2025 schema field.
+    example: PG0401
+  days_of_week:
+    type: array
+    description: Arrival weekdays in RFC 5545 weekday token format.
+    items:
+      $ref: ./Weekday.yaml
+    example:
+      - MO
+      - WE
+      - FR
+  scheduled_time:
+    type: string
+    description: Scheduled arrival time of day in the destination airport timezone.
+    pattern: "^([01]\\d|2[0-3]):[0-5]\\d$"
+    example: "14:35"
+  timezone:
+    type: string
+    description: IANA timezone of the destination airport.
+    example: Asia/Kolkata
+  origin:
+    $ref: ./AirportRef.yaml
