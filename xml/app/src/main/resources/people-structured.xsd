@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified">
+  <xs:element name="people" type="PeopleType"/>
+
+  <xs:complexType name="PeopleType">
+    <xs:sequence>
+      <xs:element name="person" type="PersonType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="count" type="NonNegativeIntType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="PersonType">
+    <xs:sequence>
+      <xs:element name="name" type="NameType" minOccurs="0"/>
+      <xs:element name="gender" type="GenderElementType" minOccurs="0"/>
+      <xs:element name="counts" type="CountsType"/>
+      <xs:element name="relations" type="RelationsType"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="PersonIdType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="NameType">
+    <xs:sequence>
+      <xs:element name="first" type="NonEmptyTextType"/>
+      <xs:element name="last" type="NonEmptyTextType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GenderElementType">
+    <xs:attribute name="value" type="GenderType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="CountsType">
+    <xs:sequence>
+      <xs:element name="spouses" type="CountType"/>
+      <xs:element name="parents" type="CountType"/>
+      <xs:element name="siblings" type="CountType"/>
+      <xs:element name="children" type="CountType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CountType">
+    <xs:attribute name="source" type="NonNegativeIntType" use="optional"/>
+    <xs:attribute name="inferred" type="NonNegativeIntType" use="required"/>
+    <xs:attribute name="validation" type="CountStatusType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="RelationsType">
+    <xs:sequence>
+      <xs:element name="spouses" type="SpousesGroupType"/>
+      <xs:element name="parents" type="ParentsGroupType"/>
+      <xs:element name="siblings" type="SiblingsGroupType"/>
+      <xs:element name="children" type="ChildrenGroupType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="SpousesGroupType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="wife" type="RelationRefType"/>
+      <xs:element name="husband" type="RelationRefType"/>
+      <xs:element name="spouse" type="RelationRefType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="ParentsGroupType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="father" type="RelationRefType"/>
+      <xs:element name="mother" type="RelationRefType"/>
+      <xs:element name="parent" type="RelationRefType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="SiblingsGroupType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="brother" type="RelationRefType"/>
+      <xs:element name="sister" type="RelationRefType"/>
+      <xs:element name="sibling" type="RelationRefType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="ChildrenGroupType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="son" type="RelationRefType"/>
+      <xs:element name="daughter" type="RelationRefType"/>
+      <xs:element name="child" type="RelationRefType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="RelationRefType">
+    <xs:attribute name="ref" type="PersonRefType" use="required"/>
+    <xs:attribute name="display-name" type="xs:string" use="required"/>
+    <xs:attribute name="provenance" type="ProvenanceType" use="required"/>
+  </xs:complexType>
+
+  <xs:simpleType name="PersonIdType">
+    <xs:restriction base="xs:ID">
+      <xs:pattern value="P[1-9][0-9]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PersonRefType">
+    <xs:restriction base="xs:IDREF">
+      <xs:pattern value="P[1-9][0-9]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="NonNegativeIntType">
+    <xs:restriction base="xs:nonNegativeInteger"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="NonEmptyTextType">
+    <xs:restriction base="xs:token">
+      <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="GenderType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="male"/>
+      <xs:enumeration value="female"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CountStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="source-unknown"/>
+      <xs:enumeration value="match"/>
+      <xs:enumeration value="under-inferred"/>
+      <xs:enumeration value="over-inferred"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ProvenanceType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="source"/>
+      <xs:enumeration value="derived-subtype"/>
+      <xs:enumeration value="derived-reciprocal"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

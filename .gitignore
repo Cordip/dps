@@ -63,3 +63,10 @@ lib/
 # misc
 
 !Task_J3-server.jar
+
+# XML lab source archive and Gradle wrapper
+!xml/docs/xml_task_X1.zip
+!xml/gradle/wrapper/gradle-wrapper.jar
+
+.metals/
+**/.metals/

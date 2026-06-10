@@ -1,0 +1,9 @@
+.gradle/
+build/
+app/build/
+
+app/input/people.xml
+
+app/output/*
+!app/output/.gitkeep
+
